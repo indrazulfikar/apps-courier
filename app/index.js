@@ -19,10 +19,13 @@ export default function index() {
       />
       </View>
       <View style={styles.flexContainer}>
+      <Link href="/listPickup" asChild>
         <TouchableOpacity style={styles.flexItem}>
           <Image source={require('../assets/mobil.png')} />
           <Text style={styles.flextext}>List Pickup</Text>
         </TouchableOpacity>
+      </Link>
+        
         <TouchableOpacity   style={styles.flexItem}>
         <Image source={require('../assets/motor.png')} />
           <Text style={styles.flextext}>Pickup Sukses</Text>

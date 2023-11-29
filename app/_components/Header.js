@@ -7,13 +7,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Header = (props) => {
 
+  let title = props.title ? props.title : 'kirimdisini';
 
 return (
   <SafeAreaProvider>
     <HeaderRNE
       leftComponent={{  }}
       rightComponent={{ text: 'kurir_pickup_zaenal', style: styles.heading } }
-      centerComponent={{text : 'kirimdisini', style: styles.subheaderText}}
+      centerComponent={{text : title, style: styles.subheaderText}}
       backgroundColor = '#ff0000'
       placement = 'left'
     />
