@@ -40,10 +40,10 @@ export default function listPickup() {
                   <ListItem key={i} bottomDivider Component={TouchableOpacity}>
                     <ListItem.Content>
                       <ListItem.Title>{l.name}</ListItem.Title>
-                      <ListItem.Subtitle right={true}>{l.subtitle}</ListItem.Subtitle>
+                      <ListItem.Subtitle>{l.subtitle}</ListItem.Subtitle>
                     </ListItem.Content>
                     <ListItem.Content right>
-                      <ListItem.Subtitle ><Link href="/detailListPickup" asChild><Text>detail</Text></Link></ListItem.Subtitle>
+                      <ListItem.Subtitle ><Link href="/detailListPickup" asChild><Text style={{ color:'blue' }}>Detail</Text></Link></ListItem.Subtitle>
                     </ListItem.Content>
                   </ListItem>
                 ))
