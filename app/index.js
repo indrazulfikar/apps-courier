@@ -1,99 +1,104 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, TextInput, Image } from 'react-native';
+import { StatusBar } from "expo-status-bar";
+import React, { useState } from "react";
 import { router, Link } from "expo-router";
-import Header from './_components/Header';
-import Footer from './_components/Footer';
+import { Divider } from '@rneui/themed';
+
+import { StyleSheet, Text, View, Image, TextInput, Button, TouchableOpacity} from "react-native";
 
 export default function index() {
+
+  const [email, setEmail] = useState("");
+
+  const [password, setPassword] = useState("");
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={{ flex:1 }}>
-        <Header/>
+
+    <View style={styles.container}>
+    <Text style={{ fontSize:34, color:'white' }}>kirimdisini</Text>
+    <Image style={styles.image} source={require("../assets/logo-login.png")} />
+      <StatusBar style="auto" />
+
+      <View style={styles.inputView}>
+        <TextInput
+          style={styles.TextInput}
+          placeholder="Email."
+          placeholderTextColor="#003f5c"
+          onChangeText={(email) => setEmail(email)}
+        />
       </View>
-      <View style={styles.searchContainer }>
-      <TextInput
-        style={styles.input}
-        // onChangeText={onChangeNumber}
-        // value={number}
-        placeholder="Cari Paket"
-      />
+
+      <View style={styles.inputView}>
+        <TextInput
+          style={styles.TextInput}
+          placeholder="Password."
+          placeholderTextColor="#003f5c"
+          secureTextEntry={true}
+          onChangeText={(password) => setPassword(password)}
+        />
       </View>
-      <View style={styles.flexContainer}>
-      <Link href="/listPickup" asChild>
-        <TouchableOpacity style={styles.flexItem}>
-          <Image source={require('../assets/mobil.png')} />
-          <Text style={styles.flextext}>List Pickup</Text>
-        </TouchableOpacity>
-      </Link>
-        
-        <TouchableOpacity   style={styles.flexItem}>
-        <Image source={require('../assets/motor.png')} />
-          <Text style={styles.flextext}>Pickup Sukses</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.flexItem}>
-        <Image source={require('../assets/box.png')} />
-          <Text style={styles.flextext}>Gagal Pickup</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.flexItem}>
-        <Image source={require('../assets/scan.png')} />
-        <Text style={styles.flextext}>Scan Pickup</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.flexItem}>
-        <Image source={require('../assets/papan.png')} />
-        <Text style={styles.flextext}>POP Manual</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.flexItem}>
-        <Image source={require('../assets/sirine.png')} />
-        <Text style={styles.flextext}>Emergency</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={{ flex:3 }}></View>
-    <Footer  />
-    </SafeAreaView>
+
+      <TouchableOpacity style={styles.loginBtn} onPress={()=>{router.replace('/home')}}>
+        <Text style={styles.loginText}>LOGIN</Text>
+      </TouchableOpacity>
+      <Divider
+      style={{ width: "80%", margin: 20 }}
+      color="white"
+      insetType="left"
+      subHeader={<Text style={styles.register_button}>Mau bergabung menjadi mitra kurir? <TouchableOpacity><Text style={{ color:'white' }}>Daftar Sekarang</Text></TouchableOpacity></Text>}
+      subHeaderStyle={{}}
+      width={1}
+      orientation="horizontal"
+    />
+    </View>
   );
+
 }
 
 const styles = StyleSheet.create({
+  
   container: {
     flex: 1,
-    backgroundColor: '#EBE3D5',
-    flexDirection:'column',
+
+    backgroundColor: "#ff0000",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  searchContainer : {
-    backgroundColor:'#FAF8ED',
-    borderRadius:10,
-    margin : 10,
-  }, 
-  flexContainer : {
-    flex:3,
-    flexDirection:'row', 
-    flexWrap: 'wrap', 
-    alignItems: 'flex-start' , 
-    backgroundColor:'#FAF8ED', 
-    padding:10, 
-    margin:10, 
-    borderRadius:20 ,
+
+  image: {
+    marginBottom: 40,
   },
-  flexItem : {
-    width:'25%', 
-    padding:10, 
-    margin:10, 
-    borderColor:'#FF8080', 
-    borderWidth:1, 
-    borderRadius:10,
-    alignItems:'center'
-  },
-  flextext : {
-    fontSize:12,
-    marginTop:5,
-    minHeight:30
-  },
-  input: {
+
+  inputView: {
+    backgroundColor: "white",
+    borderRadius: 10,
+    width: "80%",
     height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-    borderColor:'#FF8080',
-    borderRadius:5
+    marginBottom: 20,
+    alignItems: "center",
   },
+
+  TextInput: {
+    height: 50,
+    flex: 1,
+    padding: 10,
+    marginLeft: 20,
+  },
+
+  register_button: {
+    height: 30,
+    marginBottom: 30,
+    color:'white'
+  },
+
+  loginBtn: {
+    width: "60%",
+    borderRadius: 25,
+    height: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 40,
+    backgroundColor: "white",
+    borderColor:'black'
+  },
+
 });
