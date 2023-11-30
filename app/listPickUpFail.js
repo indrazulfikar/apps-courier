@@ -3,6 +3,7 @@ import { ListItem } from '@rneui/themed';
 import { router, Link } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
+import CustomDatePick from './_components/CustomDatePick';
 
 export default function listPickUpFail() {
     const dummy = [
@@ -28,7 +29,14 @@ export default function listPickUpFail() {
         <View style={styles.bawahHeader}>
             <Text style={styles.tanggal}>{ new Date().toLocaleDateString('id-ID', {weekday: 'long',  month: 'long', day:'2-digit', year :'numeric' }) }</Text>
         </View>
-            <View><Text>Date Picker</Text></View>
+          <View style={{ flexDirection : 'row', alignItems: "center", justifyContent: "center" }}>
+            <View style={{ margin:10 }}>
+              <CustomDatePick />
+            </View>
+            <View>
+              <CustomDatePick />
+            </View>
+          </View>
             <View><Text style={{ fontSize:16, fontWeight:'bold', padding:5 }}>Total 32 AWB</Text></View>
             <View>
             {
