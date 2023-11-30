@@ -1,5 +1,5 @@
 import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView} from 'react-native';
-import { ListItem } from '@rneui/themed';
+import { ListItem, Divider } from '@rneui/themed';
 import { router, Link } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
@@ -22,24 +22,78 @@ export default function listPickUpSuccess() {
             weight: '500',
             status: 'Req Pickup',
         },
+        {
+          awb: 'KD0923000000004',
+          weight: '1500',
+          status: 'Req Pickup',
+        },
+        {
+          awb: 'KD0923000000005',
+          weight: '1500',
+          status: 'Req Pickup',
+        },
+        {
+          awb: 'KD0923000000006',
+          weight: '1500',
+          status: 'Req Pickup',
+        },
+        {
+          awb: 'KD0923000000007',
+          weight: '1500',
+          status: 'Req Pickup',
+        },
+        {
+          awb: 'KD0923000000008',
+          weight: '1500',
+          status: 'Req Pickup',
+        },
+        {
+          awb: 'KD0923000000009',
+          weight: '1500',
+          status: 'Req Pickup',
+        },
+        {
+          awb: 'KD0923000000010',
+          weight: '1500',
+          status: 'Req Pickup',
+        },
       ]
     return(
         <SafeAreaView style={styles.container}>
-        <Header title='List Pickup Sukses'/>
-        <View style={styles.bawahHeader}>
+
+          <View style={styles.headerContainer}>
+            <Header title='List Pickup Sukses'/>
+          </View>
+
+          <View style={styles.headerChild}>
             <Text style={styles.tanggal}>{ new Date().toLocaleDateString('id-ID', {weekday: 'long',  month: 'long', day:'2-digit', year :'numeric' }) }</Text>
-        </View>
-            <View style={{ flexDirection : 'row', alignItems: "center", justifyContent: "center" }}>
-              <View style={{ margin:10 }}>
-                <CustomDatePick />
-              </View>
-              <View>
-                <CustomDatePick />
-              </View>
+            <View style={styles.dropdownContainer}>
             </View>
-            <View><Text style={{ fontSize:16, fontWeight:'bold', padding:5 }}>Total 32 AWB</Text></View>
+          </View>
+
+          <View style={styles.datepickContainer}>
+            <View style={{ margin:10 }}>
+              <CustomDatePick />
+            </View>
             <View>
-            {
+              <CustomDatePick />
+            </View>
+          </View>
+
+          <View style={styles.totalContainer}>
+            <Text style={styles.totalText}>Total 32 AWB</Text>
+          </View>
+
+          <Divider
+            style={{margin: 5 }}
+            color="red"
+            width={2}
+            orientation="horizontal"
+          />
+
+          <View style={styles.listContainer}>
+            <ScrollView>
+              {
                 dummy.map((l, i) => (
                   <ListItem key={i} bottomDivider Component={View}>
                     <ListItem.Content>
@@ -56,30 +110,54 @@ export default function listPickUpSuccess() {
                   </ListItem>
                 ))
               }
-            </View>
-            <View style={{ flex:3 }}></View>
-            <Footer  />
+            </ScrollView>
+          </View>
+
+          <Footer  />
         </SafeAreaView>
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-        flexDirection:'column',
-      },
-      bawahHeader : {
-        flex: 1,
-        flexDirection : 'row'
-      },
-      tanggal : {
-        flex : 1,
-        color:'grey',
-        margin: 10
-      },
-      tableHead :{
-        fontSize:12,
-        color : 'grey'
-      }
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+    flexDirection:'column',
+  },
+  headerContainer : {
+    flex:2,
+  },
+  headerChild : {
+    flex: 1,
+    flexDirection : 'row'
+  },
+  tanggal : {
+    flex : 2,
+    color:'grey',
+    margin: 10
+  },
+  dropdownContainer : {
+    flex:1
+  },
+  datepickContainer : { 
+    flex:2,
+    flexDirection : 'row', 
+    alignItems: "center", 
+    justifyContent: "space-evenly" 
+  },
+  totalContainer : {
+    flex:1,
+    margin:10
+  },
+  totalText : {
+    fontSize:16, 
+    fontWeight:'bold'
+  },
+  listContainer : {
+    flex : 13,
+  },
+  tableHead :{
+    fontSize:12,
+    color : 'grey'
+  }
 });
