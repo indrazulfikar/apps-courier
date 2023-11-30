@@ -3,8 +3,17 @@ import { ListItem } from '@rneui/themed';
 import { router, Link } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
+import {SelectList} from 'react-native-dropdown-select-list';
+import { useState } from 'react';
 
 export default function listPickup() {
+  const [selected, setSelected] = useState('');
+  const data = [
+    // {key:'1', value:'Seller', disabled:true},
+    {key:'1', value:'Seller'},
+    {key:'2', value:'Kelurahan'},
+  ];
+
     const dummy = [
         {
           name: 'Pasti_Laku',
@@ -30,7 +39,14 @@ export default function listPickup() {
                 <Header title='List Pickup'/>
                 <View style={styles.bawahHeader}>
                     <Text style={styles.tanggal}>{ new Date().toLocaleDateString('id-ID', {weekday: 'long',  month: 'long', day:'2-digit', year :'numeric' }) }</Text>
-                    <Text >Dropdown</Text>
+                    <SelectList 
+                        setSelected={(val) => setSelected(val)} 
+                        data={data} 
+                        save="value"
+                        placeholder='Urutkan'
+                        dropdownStyles={{ zIndex:999, minHeight:100, backgroundColor : 'white' }}
+                        boxStyles={{ margin:10, borderColor:'red' }}
+                    />
                 </View>
             </View>
             <View style={{ margin:10 }}><Text style={{ fontSize:16, fontWeight:'bold' }}>Total : 25 Seller</Text></View>
