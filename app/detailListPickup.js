@@ -1,8 +1,9 @@
-import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView} from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, ScrollView} from 'react-native';
 import Header from './_components/Header';
 import Footer from './_components/Footer';
 import { useState } from 'react';
 import CustomAccordion from './_components/CustomAccordion';
+import { Divider } from '@rneui/themed';
 
 export default function detailListPickup() {
     const [expanded, setExpanded] = useState({});
@@ -28,45 +29,120 @@ export default function detailListPickup() {
             phone: '081315977082',
             weight: '1200',
         },
+        {
+          name: 'Pasti_Laku',
+          id: 'KD0923000000004',
+          address: 'Jl. Malabar IV No. 4 Komplek Keuangan Karang Tengah Ciledug Tangerang 15157',
+          phone: '081315977082',
+          weight: '1200',
+        },
+        {
+          name: 'Pasti_Laku',
+          id: 'KD0923000000005',
+          address: 'Jl. Malabar IV No. 4 Komplek Keuangan Karang Tengah Ciledug Tangerang 15157',
+          phone: '081315977082',
+          weight: '1200',
+        },
+        {
+          name: 'Pasti_Laku',
+          id: 'KD0923000000006',
+          address: 'Jl. Malabar IV No. 4 Komplek Keuangan Karang Tengah Ciledug Tangerang 15157',
+          phone: '081315977082',
+          weight: '1200',
+        },
+        {
+          name: 'Pasti_Laku',
+          id: 'KD0923000000007',
+          address: 'Jl. Malabar IV No. 4 Komplek Keuangan Karang Tengah Ciledug Tangerang 15157',
+          phone: '081315977082',
+          weight: '1200',
+        },
+        {
+          name: 'Pasti_Laku',
+          id: 'KD0923000000008',
+          address: 'Jl. Malabar IV No. 4 Komplek Keuangan Karang Tengah Ciledug Tangerang 15157',
+          phone: '081315977082',
+          weight: '1200',
+        },
+        {
+          name: 'Pasti_Laku',
+          id: 'KD0923000000009',
+          address: 'Jl. Malabar IV No. 4 Komplek Keuangan Karang Tengah Ciledug Tangerang 15157',
+          phone: '081315977082',
+          weight: '1200',
+        },
+        {
+          name: 'Pasti_Laku',
+          id: 'KD0923000000010',
+          address: 'Jl. Malabar IV No. 4 Komplek Keuangan Karang Tengah Ciledug Tangerang 15157',
+          phone: '081315977082',
+          weight: '1200',
+        },
         
       ]
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={{ flex:1 }}>
-                <Header title='List Pickup'/>
-                <View style={styles.bawahHeader}>
-                    <Text style={styles.tanggal}>{ new Date().toLocaleDateString('id-ID', {weekday: 'long',  month: 'long', day:'2-digit', year :'numeric' }) }</Text>
-                    <Text style={{ fontSize:14, fontWeight:'bold', padding:5 }}>Total 74 AWB</Text>
-                </View>
-            </View>
-            <View>
-            {
-              dummy.map((l, i) => (
-                  <CustomAccordion data={ l } />
-              ))
-            }
-            
-            </View>
-            <View style={{ flex:3 }}></View>
-            <Footer  />
+
+          <View style={styles.headerContainer}>
+            <Header/>
+          </View>
+
+          <View style={styles.headerChild}>
+            <Text style={styles.tanggal}>{ new Date().toLocaleDateString('id-ID', {weekday: 'long',  month: 'long', day:'2-digit', year :'numeric' }) }</Text>
+            <Text style={styles.dropdownContainer}>Total 74 AWB</Text>
+          </View>
+
+          <Divider
+            style={{margin: 5 }}
+            color="red"
+            width={2}
+            orientation="horizontal"
+          />
+
+          <View style={styles.listContainer}>
+            <ScrollView>
+              {
+                dummy.map((l, i) => (
+                    <CustomAccordion data={ l } />
+                ))
+              }
+            </ScrollView>
+          </View>
+
+          <Footer  />
         </SafeAreaView>
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-        flexDirection:'column',
-      },
-      bawahHeader : {
-        flex: 1,
-        flexDirection : 'row'
-      },
-      tanggal : {
-        flex : 1,
-        color:'grey',
-        margin: 10
-      }
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+    flexDirection:'column',
+  },
+  headerContainer : {
+    flex:2,
+  },
+  headerChild : {
+    flex: 1,
+    flexDirection : 'row'
+  },
+  tanggal : {
+    flex : 2,
+    color:'grey',
+    margin: 10
+  },
+  dropdownContainer : {
+    flex:1,
+    margin : 10,
+    textAlign:'right',
+    fontSize:16,
+    fontWeight:'bold'
+  },
+  listContainer : {
+    flex : 13,
+    paddingLeft:10,
+    paddingRight:10,
+  }
 });
