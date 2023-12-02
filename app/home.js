@@ -22,7 +22,7 @@ export default function home() {
       </View>
 
       <View style={styles.contentBackground }>
-        <Text style={{ paddingLeft:10, fontSize:14, fontWeight:'bold' }}>Pick Up</Text>
+
         <View style={styles.contentList}>
           <Link href="/listPickup" asChild>
             <TouchableOpacity style={styles.contentItem}>
@@ -42,56 +42,43 @@ export default function home() {
               <Text style={styles.contentText}>Gagal Pickup</Text>
             </TouchableOpacity>
           </Link>
-          <TouchableOpacity style={styles.contentItem}>
-            <Image source={require('../assets/scan.png')} />
-            <Text style={styles.contentText}>Scan Pickup</Text>
-          </TouchableOpacity>
         </View>
-      </View>
 
-      <View style={styles.contentBackground }>
-        <Text style={{ paddingLeft:10, fontSize:14, fontWeight:'bold' }}>Delivery</Text>
         <View style={styles.contentList}>
-          <Link href="/listPickup" asChild>
+          <Link href="/listDelivery" asChild>
             <TouchableOpacity style={styles.contentItem}>
               <Image source={require('../assets/mobil.png')} />
               <Text style={styles.contentText}>List Delivery</Text>
             </TouchableOpacity>
           </Link>
-          <Link href="/listPickUpSuccess" asChild>
+          <Link href="/listDeliverySuccess" asChild>
             <TouchableOpacity   style={styles.contentItem}>
               <Image source={require('../assets/motor.png')} />
               <Text style={styles.contentText}>Delivery Sukses</Text>
             </TouchableOpacity>
           </Link>
-          <Link href="/listPickUpFail" asChild>
+          <Link href="/listDeliveryFail" asChild>
             <TouchableOpacity style={styles.contentItem}>
               <Image source={require('../assets/box.png')} />
               <Text style={styles.contentText}>Delivery Gagal</Text>
             </TouchableOpacity>
           </Link>
+        </View>
+
+        <View style={styles.contentList}>
           <TouchableOpacity style={styles.contentItem}>
             <Image source={require('../assets/scan.png')} />
-            <Text style={styles.contentText}>Scan</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.contentBackground }>
-      <Text style={{ paddingLeft:10, fontSize:14, fontWeight:'bold' }}></Text>
-        <View style={{ flex:1, flexDirection:'row', }}>
-          <TouchableOpacity style={styles.contentItem}>
-            <Image source={require('../assets/papan.png')} />
-            <Text style={styles.contentText}>POP Manual</Text>
+            <Text style={styles.contentText}>Scan AWB</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.contentItem}>
             <Image source={require('../assets/sirine.png')} />
             <Text style={styles.contentText}>Emergency</Text>
           </TouchableOpacity>
         </View>
+
       </View>
-      
-      <View style={{ flex:3 }}></View>
+
+      <View style={{ flex:4 }}></View>
     <Footer  />
     </SafeAreaView>
   );
@@ -122,8 +109,8 @@ const styles = StyleSheet.create({
     borderRadius:5
   },
   contentBackground : {
-    flex:3,
-    padding:5, 
+    flex:8,
+    padding:10, 
     margin:10,
     borderRadius:20,
     backgroundColor:'#FAF8ED', 
@@ -131,18 +118,21 @@ const styles = StyleSheet.create({
   contentList  : {
     flex:1,
     flexDirection:'row',
-    justifyContent:'space-around'
+    justifyContent:'flex-start',
   },
   contentItem : {
-    padding:5, 
+    padding:10, 
     margin:5, 
     borderColor:'#FF8080', 
     borderWidth:1, 
     borderRadius:10,
-    alignItems:'center'
+    alignItems:'center',
+    justifyContent:'space-evenly'
   },
   contentText : {
     fontSize:12,
     marginTop:5,
+    width:90,
+    textAlign:'center'
   },
 });
