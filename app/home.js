@@ -47,29 +47,31 @@ export default function home() {
         <View style={styles.contentList}>
           <Link href="/listDelivery" asChild>
             <TouchableOpacity style={styles.contentItem}>
-              <Image source={require('../assets/mobil.png')} />
+              <Image source={require('../assets/mobil2.png')} />
               <Text style={styles.contentText}>List Delivery</Text>
             </TouchableOpacity>
           </Link>
           <Link href="/listDeliverySuccess" asChild>
             <TouchableOpacity   style={styles.contentItem}>
-              <Image source={require('../assets/motor.png')} />
+              <Image source={require('../assets/dikirimkurir.png')} />
               <Text style={styles.contentText}>Delivery Sukses</Text>
             </TouchableOpacity>
           </Link>
           <Link href="/listDeliveryFail" asChild>
             <TouchableOpacity style={styles.contentItem}>
-              <Image source={require('../assets/box.png')} />
+              <Image source={require('../assets/boxgagal.png')} />
               <Text style={styles.contentText}>Delivery Gagal</Text>
             </TouchableOpacity>
           </Link>
         </View>
 
         <View style={styles.contentList}>
-          <TouchableOpacity style={styles.contentItem}>
-            <Image source={require('../assets/scan.png')} />
-            <Text style={styles.contentText}>Scan AWB</Text>
-          </TouchableOpacity>
+          <Link href="/scanMenu" asChild>
+            <TouchableOpacity style={styles.contentItem}>
+              <Image source={require('../assets/scan.png')} />
+              <Text style={styles.contentText}>Scan AWB</Text>
+            </TouchableOpacity>
+          </Link>
           <TouchableOpacity style={styles.contentItem}>
             <Image source={require('../assets/sirine.png')} />
             <Text style={styles.contentText}>Emergency</Text>
