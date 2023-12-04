@@ -8,16 +8,17 @@ const AccordionDelivery = (props) => {
     const [showModal, setShowModal] = useState(false);
     const [checked, setChecked] = useState(1);
     const [selected, setSelected] = useState(1);
+    const [name, setName] = useState('');
+    const [reason, setReason] = useState('');
+    
     const choice = [
-      // {key:'1', value:'Seller', disabled:true},
       {key:'1', value:'Delivery Sukses'},
       {key:'2', value:'Delivery Gagal'},
     ];
-    const reason = ['Dangerous Goods', 'Invalid Address', 'Packing Rusak', 'Paket Belum Siap', 'Alasan Lain'];
-    const successChoice = ['Nama Sesuai Tertera', 'Penerima Lain'];
-    
-
+    const reasonList = ['Dangerous Goods', 'Invalid Address', 'Packing Rusak', 'Paket Belum Siap', 'Alasan Lain'];
+   
     let data = props.data;
+    const updateAwb = props.updateAwb;
 
     const toggleModal = () => {
       setShowModal(!showModal);
@@ -25,7 +26,13 @@ const AccordionDelivery = (props) => {
       setSelected(1);
     };
 
+    const updateHandler= (id) => {
+      toggleModal();
+      updateAwb(id,selected, name, reason);
+    }
+
     return(
+      <View>
         <ListItem.Accordion
         content={
           <ListItem.Content>
@@ -50,66 +57,49 @@ const AccordionDelivery = (props) => {
                     <Text>Service : {data.service}</Text>
                 </View>
                 <View><TouchableOpacity><Text onPress={toggleModal} style={{ color:'blue',  fontWeight:'bold' }}>Update</Text></TouchableOpacity></View>
-                        <Dialog
-              isVisible={showModal}
-              // onBackdropPress={toggleModal}
-            >
+            </View>
+            <View style={styles.buttongroup}>
+                <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>WA Call</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>WA Chat</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>Navigasi</Text></TouchableOpacity>
+            </View>
+          </ListItem.Content>
+        </ListItem>
+      </ListItem.Accordion>
+
+      <Dialog isVisible={showModal} onBackdropPress={toggleModal}>
 
           <Dialog.Title title=""/>
           <SelectList 
-                setSelected={(val) => setSelected(val)} 
+                setSelected={(val) => {setSelected(val); setChecked(1)}} 
                 data={choice} 
                 save="key"
-                placeholder='Pickup Sukses'
+                placeholder='Delivery Sukses'
                 dropdownStyles={{ zIndex:999, minHeight:100, backgroundColor : 'white' }}
                 boxStyles={{ margin:10, borderColor:'red' }}
             />
             {
               selected == 1
-              &&
-              successChoice.map((l, i) => (
-                <CheckBox
-                  key={i}
-                  title={l}
-                  containerStyle={{ backgroundColor: 'white', borderWidth: 0 }}
-                  checkedIcon="dot-circle-o"
-                  uncheckedIcon="circle-o"
-                  checked={checked === i + 1}
-                  onPress={() => setChecked(i + 1)}
-                  checkedColor='red'
-                />
-              ))
-            }
-            {
-              selected == 1 && checked == 2
-              &&
-              <Input/>
+              && 
+              <View style={{ padding:10 }}>
+                <Text>Diterima Oleh :</Text>
+                <Input onChangeText={setName}/>
+              </View>
+              
             }
             { 
               selected == 1 
               && 
-              <Dialog.Actions>
-                <Dialog.Button
-                  title="Ambil Foto"
-                  onPress={() => {
-                    // console.log(`Option ${checked} was selected!`);
-                    toggleModal();
-                  }}
-                  titleStyle={{ color:'red' }}
-                />
-                <Dialog.Button title="CANCEL" onPress={toggleModal} titleStyle={{ color:'red' }}/>
-              </Dialog.Actions>
-           
-            }
-            {
-              successChoice == 2
-              &&
-              <Input/>
+              <TouchableOpacity onPress={()=>{ updateHandler(data.id)}}>
+                <View style={{ borderColor:'white', backgroundColor:'red', borderWidth:2, borderRadius : 10, padding:10, alignItems:'center'}}>
+                  <Text style={{ color:"white", fontWeight:'bold' }}>Update dan Ambil Foto</Text>
+                </View>
+              </TouchableOpacity>
             }
             { 
               selected == 2 
               && 
-              reason.map((l, i) => (
+              reasonList.map((l, i) => (
                 <CheckBox
                   key={i}
                   title={l}
@@ -125,7 +115,7 @@ const AccordionDelivery = (props) => {
             {
               checked == 5
               &&
-              <Input />
+              <Input onChangeText={setReason} />
             }
             { 
               selected == 2 
@@ -134,8 +124,7 @@ const AccordionDelivery = (props) => {
           <Dialog.Button
             title="UPDATE"
             onPress={() => {
-              console.log(`Option ${checked} was selected!`);
-              toggleModal();
+              updateHandler(data.id);
             }}
             titleStyle={{ color:'red' }}
           />
@@ -144,15 +133,7 @@ const AccordionDelivery = (props) => {
             }
          
           </Dialog>
-            </View>
-            <View style={styles.buttongroup}>
-                <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>WA Call</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>WA Chat</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>Navigasi</Text></TouchableOpacity>
-            </View>
-          </ListItem.Content>
-        </ListItem>
-      </ListItem.Accordion>
+        </View>
     );
 }
 
