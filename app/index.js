@@ -1,15 +1,65 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
-import { router, Link } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { router } from "expo-router";
 import { Divider } from '@rneui/themed';
-
 import { StyleSheet, Text, View, Image, TextInput, Button, TouchableOpacity} from "react-native";
+import { HostUri } from "./_components/HostUri";
+import * as SecureStore from 'expo-secure-store';
 
 export default function index() {
 
-  const [email, setEmail] = useState("");
-
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [token, setToken] = useState("");
+  const [loading, setLoading] = useState("");
+
+  useEffect(() => {
+    async function getValueFor(key) {
+      await SecureStore.getItemAsync(key).then((result) => {
+        if(result){
+          router.replace('/home');
+        }
+      });
+    }
+    getValueFor('secured_token');
+  }, []);
+
+  async function save(key, value) {
+    await SecureStore.setItemAsync(key, value);
+  }
+  
+  const loginHandler = async () => {
+    const formData = {
+      telp: phone,
+      password: password,
+    };
+    
+    await fetch(HostUri+'login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then( (result) => {
+      // await SecureStore.setItemAsync('token', result.data.token);
+      // await SecureStore.setItemAsync('name', result.data.name);
+      save('secured_token', result.data.token);
+      save('secured_name', result.data.name);
+      console.log(result.data);
+      router.replace('/home');
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+
+  } 
 
   return (
 
@@ -20,12 +70,13 @@ export default function index() {
 
       <View style={styles.inputView}>
         <TextInput
+          keyboardType="number-pad"
           style={styles.TextInput}
-          placeholder="Email."
+          placeholder="Number"
           placeholderTextColor="#003f5c"
-          onChangeText={(email) => setEmail(email)}
+          onChangeText={(phone) => setPhone(phone)}
         />
-      </View>
+      </View>   
 
       <View style={styles.inputView}>
         <TextInput
@@ -37,7 +88,7 @@ export default function index() {
         />
       </View>
 
-      <TouchableOpacity style={styles.loginBtn} onPress={()=>{router.replace('/home')}}>
+      <TouchableOpacity style={styles.loginBtn} onPress={()=>{loginHandler()}}>
         <Text style={styles.loginText}>LOGIN</Text>
       </TouchableOpacity>
       <Divider
