@@ -111,7 +111,7 @@ export default function listPickup() {
                       <ListItem.Subtitle>{l.subdistrict_name}</ListItem.Subtitle>
                     </ListItem.Content>
                     <ListItem.Content right>
-                      <ListItem.Subtitle ><Link href="/detailListPickup" asChild><Text style={{ color:'blue' }}>Detail</Text></Link></ListItem.Subtitle>
+                      <ListItem.Subtitle ><Link href={"/detailPickup/"+l.shipping_id} asChild><Text style={{ color:'blue' }}>Detail</Text></Link></ListItem.Subtitle>
                     </ListItem.Content>
                   </ListItem>
                 ))

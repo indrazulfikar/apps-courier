@@ -8,6 +8,7 @@ const AccordionPickUp = (props) => {
     const [showModal, setShowModal] = useState(false);
     const [checked, setChecked] = useState(1);
     const [selected, setSelected] = useState(1);
+    const onPressUpdate = props.onPressUpdate;
     const choice = [
       // {key:'1', value:'Seller', disabled:true},
       {key:'1', value:'Pickup Sukses'},
@@ -22,12 +23,17 @@ const AccordionPickUp = (props) => {
       setShowModal(!showModal);
     };
 
+    const updateToSuccessHandler = async(shipping_id, selected_choice) => {
+      await onPressUpdate(shipping_id, selected_choice);
+      setShowModal(!showModal);
+    }
+
     return(
         <ListItem.Accordion
         content={
           <ListItem.Content>
-            <ListItem.Title><Text style={{ color:'white' }}>{data.name}</Text></ListItem.Title>
-            <ListItem.Subtitle><Text style={{ color:'white' }}>{data.id}</Text></ListItem.Subtitle>
+            <ListItem.Title><Text style={{ color:'white' }}>{data.transaction_address_name}</Text></ListItem.Title>
+            <ListItem.Subtitle><Text style={{ color:'white' }}>{data.shipping_awb}</Text></ListItem.Subtitle>
           </ListItem.Content>
         }
         isExpanded={expanded}
@@ -41,9 +47,11 @@ const AccordionPickUp = (props) => {
           <ListItem.Content>
             <View style={{ flexDirection:'row' }}>
                 <View style={{ flex:1 }}>
-                    <Text>{data.address}</Text>
-                    <Text>Telp. {data.phone}</Text>
-                    <Text>Muatan : {data.weight} gram</Text>
+                    <Text>{data.transaction_address_detail}</Text>
+                    {data.kelurahan && <Text>Kel. {data.kelurahan}{data.city_name && <Text> Kota. {data.city_name}</Text>}</Text>}
+                    {data.province_name && <Text>Prov. {data.province_name} {data.zipcode && <Text>Prov. {data.zipcode} </Text>}</Text>}
+                    {data.telp && <Text>Telp. {data.telp}</Text>}
+                    {data.shipping_product_weight && <Text>Berat {data.shipping_product_weight}</Text>}
                 </View>
                 <View><TouchableOpacity><Text onPress={toggleModal} style={{ color:'blue',  fontWeight:'bold' }}>Update</Text></TouchableOpacity></View>
                         <Dialog
@@ -66,10 +74,7 @@ const AccordionPickUp = (props) => {
               <Dialog.Actions>
           <Dialog.Button
             title="UPDATE"
-            onPress={() => {
-              // console.log(`Option ${checked} was selected!`);
-              toggleModal();
-            }}
+            onPress={() => {updateToSuccessHandler(data.shipping_id, selected);}}
             titleStyle={{ color:'red' }}
           />
           <Dialog.Button title="CANCEL" onPress={toggleModal} titleStyle={{ color:'red' }}/>
