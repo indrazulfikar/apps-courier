@@ -3,13 +3,22 @@ import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, TextInput, Imag
 import { router, Link } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
+import { useState, useEffect } from 'react';
+import * as SecureStore from 'expo-secure-store';
 
 export default function home() {
+
+  const [token, setToken] = useState("");
+
+  const getToken = (secured_token) => {
+    setToken(secured_token);
+  }
+
   return (
     <SafeAreaView style={styles.container}>
 
       <View style={styles.headerContainer}>
-        <Header/>
+        <Header getToken={getToken}/>
       </View>
 
       <View style={styles.searchContainer }>
