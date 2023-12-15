@@ -1,6 +1,6 @@
 import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView} from 'react-native';
 import { ListItem, Divider, Skeleton } from '@rneui/themed';
-import { Link, Stack } from "expo-router";
+import { Link } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
 import {SelectList} from 'react-native-dropdown-select-list';

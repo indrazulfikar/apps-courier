@@ -49,9 +49,9 @@ const AccordionPickUp = (props) => {
                 <View style={{ flex:1 }}>
                     <Text>{data.transaction_address_detail}</Text>
                     {data.kelurahan && <Text>Kel. {data.kelurahan}{data.city_name && <Text> Kota. {data.city_name}</Text>}</Text>}
-                    {data.province_name && <Text>Prov. {data.province_name} {data.zipcode && <Text>Prov. {data.zipcode} </Text>}</Text>}
+                    {data.province_name && <Text>Prov. {data.province_name} {data.zipcode && <Text>{data.zipcode} </Text>}</Text>}
                     {data.telp && <Text>Telp. {data.telp}</Text>}
-                    {data.shipping_product_weight && <Text>Berat {data.shipping_product_weight}</Text>}
+                    {data.shipping_product_weight && <Text>Berat {data.shipping_product_weight} gram</Text>}
                 </View>
                 <View><TouchableOpacity><Text onPress={toggleModal} style={{ color:'blue',  fontWeight:'bold' }}>Update</Text></TouchableOpacity></View>
                         <Dialog

@@ -1,63 +1,50 @@
 import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView} from 'react-native';
-import { ListItem, Divider } from '@rneui/themed';
-import { router, Link } from "expo-router";
+import { ListItem, Divider, Skeleton } from '@rneui/themed';
+import { Link } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
 import CustomDatePick from './_components/CustomDatePick';
+import { useState, useEffect } from 'react';
+import { HostUri } from './_components/HostUri';
+import * as SecureStore from 'expo-secure-store';
 
 export default function listDeliveryFail() {
-    const dummy = [
-        {
-          awb: 'KD0923000000001',
-          reason: 'Dangerous Goods',
-          status: 'Gagal',
-        },
-        {
-          awb: 'KD0923000000002',
-          reason: 'Paket Belum Siap',
-          status: 'Gagal',
-        },
-        {
-          awb: 'KD0923000000003',
-          reason: 'Packing Rusak',
-          status: 'Update',
-        },
-        {
-          awb: 'KD0923000000004',
-          reason: 'Invalid Address',
-          status: 'Update',
-        },
-        {
-          awb: 'KD0923000000005',
-          reason: 'Paket Belum Siap',
-          status: 'Update',
-        },
-        {
-          awb: 'KD0923000000006',
-          reason: 'Invalid Address',
-          status: 'Update',
-        },
-        {
-          awb: 'KD0923000000007',
-          reason: 'Invalid Address',
-          status: 'Update',
-        },
-        {
-          awb: 'KD0923000000008',
-          reason: 'Invalid Address',
-          status: 'Update',
-        },
-        {
-          awb: 'KD0923000000009',
-          reason: 'Invalid Address',
-          status: 'Update',
-        },
-        {
-          awb: 'KD0923000000010',
-          reason: 'Invalid Address',
-          status: 'Update',
-        },
-      ]
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
+  const [err, setErr] = useState('Disconnected Please Check your Connection !');
+
+      useEffect(() => {
+        getData();
+      }, []);
+
+      const getData = async () => {
+        await SecureStore.getItemAsync('secured_token').then((token) => {
+          fetch(HostUri+'delivery/fail', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization' : 'Bearer '+token       
+            },
+          })
+          .then(response => {
+            if (!response.ok) {
+              setLoading(false);
+              throw new Error('Disconnected please check connection');
+            }
+            return response.json();
+          })
+          .then( (result) => {
+            setData(result.data);
+            setLoading(false);
+          })
+          .catch(error => {
+            console.log(token);
+            setLoading(false);
+            console.error('Error:', error);
+          })
+        });
+      }
+
     return(
       <SafeAreaView style={styles.container}>
 
@@ -93,18 +80,36 @@ export default function listDeliveryFail() {
 
         <View style={styles.listContainer}>
           <ScrollView>
-            {
-              dummy.map((l, i) => (
+          {
+            loading &&
+            <View style={{ flex:1, flexDirection:'column', padding:10 }}>
+              {
+                [{},{},{},{},{},{},].map((l, i) => (
+                  <Skeleton
+                  // LinearGradientComponent={LinearGradient}
+                  animation="pulse"
+                  width={'100%'}
+                  height={60}
+                  style={{ marginBottom:5 }}
+                  key={i}
+                />
+                  ))
+              }
+            </View>
+            
+          }
+            { !loading &&
+              data.map((l, i) => (
                 <ListItem key={i} bottomDivider Component={View}>
                   <ListItem.Content>
                     <ListItem.Subtitle><Text style={styles.tableHead}>AWB</Text></ListItem.Subtitle>
-                    <ListItem.Title><Text style={{ fontWeight:'bold' }}>{l.awb}</Text></ListItem.Title>
+                    <ListItem.Title><Text style={{ fontWeight:'bold' }}>{l.shipping_awb}</Text></ListItem.Title>
                     <ListItem.Subtitle><Text style={styles.tableHead}>Alasan</Text></ListItem.Subtitle>
                     <ListItem.Title>{l.reason}</ListItem.Title>
                   </ListItem.Content>
                   <ListItem.Content right>
                     <ListItem.Subtitle><Text style={styles.tableHead}>Status</Text></ListItem.Subtitle>
-                    <ListItem.Title><Text style={{ color:'red' }}>{l.status}</Text></ListItem.Title>
+                    <ListItem.Title><Text style={{ color:'red' }}>{l.shipping_status}</Text></ListItem.Title>
                     <ListItem.Subtitle ><TouchableOpacity><Text style={{ color:'blue' }}>Update</Text></TouchableOpacity></ListItem.Subtitle>
                   </ListItem.Content>
                 </ListItem>

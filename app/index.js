@@ -64,7 +64,7 @@ export default function index() {
   return (
 
     <View style={styles.container}>
-    <Text style={{ fontSize:34, color:'white' }}>kirimdisini</Text>
+    <Image style={styles.imageLogo} source={require("../assets/icondepan.png")} />
     <Image style={styles.image} source={require("../assets/logo-login.png")} />
       <StatusBar style="auto" />
 
@@ -116,6 +116,12 @@ const styles = StyleSheet.create({
 
   image: {
     marginBottom: 40,
+  },
+
+  imageLogo :{
+    width:150,
+    height:80,
+    borderRadius:5
   },
 
   inputView: {
