@@ -9,6 +9,7 @@ import { useLocalSearchParams } from 'expo-router';
 import CanvasCamera from '../_components/CanvasCamera';
 import { HostUri } from '../_components/HostUri';
 import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
 
 export default function detailListDelivery() {
     const { id } = useLocalSearchParams();
@@ -39,30 +40,39 @@ export default function detailListDelivery() {
 
     const getData = async () => {
     await SecureStore.getItemAsync('secured_token').then((token) => {
-        fetch(HostUri+'delivery/seller/'+id, {
-        method: 'GET',
+      axios({
+        method: "get",
+        url: HostUri+`delivery/seller/${id}`,
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization' : 'Bearer '+token       
+          "Content-Type": 'application/json',
+          "Authorization" : `Bearer ${token}`,
         },
-        })
-        .then(response => {
-        if (!response.ok) {
-            setLoading(false);
-            throw new Error('Disconnected please check connection');
-        }
-        return response.json();
-        })
-        .then( (result) => {
-            // console.log(result.data);
-            setBigData(result.data);
-            setLoading(false);
-        })
-        .catch(error => {
-        console.log(token);
-            setLoading(false);
-            console.error('Error:', error);
-        })
+      }).then(function (response) {
+          // berhasil
+          setLoading(false);
+          setBigData(response.data.data);
+        }).catch(function (error) {
+          // masuk ke server tapi return error (unautorized dll)
+          if (error.response) {
+            //gagal login
+            if(error.response.data.messsage == 'Unauthorized')
+            {
+              SecureStore.deleteItemAsync('secured_token');
+              SecureStore.deleteItemAsync('secured_name');
+              router.replace('/');
+            }
+            // console.error(error.response.data);
+            // console.error(error.response.status);
+            // console.error(error.response.headers);
+          } else if (error.request) {
+            // ga konek ke server
+            alert('Check Koneksi anda !')
+            console.error(error.request);
+          } else {
+            // error yang ga di sangka2
+            console.error("Error", error.message);
+          }
+      });
     });
     }
 
@@ -82,7 +92,6 @@ export default function detailListDelivery() {
       setStartCamera(false);
       updateShipping();
     }
-
     const updateShipping = async (awb, selected_choice, name, check, reason) =>{
       console.log('masuk');
       // choice
@@ -91,33 +100,44 @@ export default function detailListDelivery() {
 
         // ALL REQUEST shipping_id, selected_tracking, alasan, image, name
         await SecureStore.getItemAsync('secured_token').then((token) => {
-        const fromInput = {
+        axios({
+          method: "post",
+          url: HostUri+'delivery/update',
+          headers: {
+            "Content-Type": 'application/json',
+            "Authorization" : `Bearer ${token}`,
+          },
+          data :{
             shipping_id: id,
             selected_tracking: choiceList[(selected_choice-1)],
             alasan : (check == 5) ? reason : reasonList[(check-1)],
             image : '',
             name : name,
-        };
-      
-        fetch(HostUri+'delivery/update', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization' : 'Bearer '+token       
-            },
-            body: JSON.stringify(fromInput),
-        })
-        .then(response => {
-            if (!response.ok) {
-            throw new Error('Network response was not ok');
+        }
+        }).then(function (response) {
+            // berhasil
+            router.back();
+          }).catch(function (error) {
+            // masuk ke server tapi return error (unautorized dll)
+            if (error.response) {
+              //gagal login
+              if(error.response.data.messsage == 'Unauthorized')
+              {
+                SecureStore.deleteItemAsync('secured_token');
+                SecureStore.deleteItemAsync('secured_name');
+                router.replace('/');
+              }
+              // console.error(error.response.data);
+              // console.error(error.response.status);
+              // console.error(error.response.headers);
+            } else if (error.request) {
+              // ga konek ke server
+              alert('Check Koneksi anda !')
+              console.error(error.request);
+            } else {
+              // error yang ga di sangka2
+              console.error("Error", error.message);
             }
-            return response.json();
-        })
-        .then((result) => {
-          router.back();
-        })
-        .catch(error => {
-            console.error('Error:', error);
         });
     });  
     }

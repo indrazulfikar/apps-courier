@@ -7,6 +7,7 @@ import CustomDatePick from './_components/CustomDatePick';
 import { useState, useEffect } from 'react';
 import { HostUri } from './_components/HostUri';
 import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
 
 export default function listDeliveryFail() {
   const [loading, setLoading] = useState(true);
@@ -19,32 +20,42 @@ export default function listDeliveryFail() {
 
       const getData = async () => {
         await SecureStore.getItemAsync('secured_token').then((token) => {
-          fetch(HostUri+'delivery/fail', {
-            method: 'GET',
+          axios({
+            method: "get",
+            url: HostUri+'delivery/fail',
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization' : 'Bearer '+token       
+              "Content-Type": 'application/json',
+              "Authorization" : `Bearer ${token}`,
             },
-          })
-          .then(response => {
-            if (!response.ok) {
+          }).then(function (response) {
+              // berhasil
               setLoading(false);
-              throw new Error('Disconnected please check connection');
-            }
-            return response.json();
-          })
-          .then( (result) => {
-            setData(result.data);
-            setLoading(false);
-          })
-          .catch(error => {
-            console.log(token);
-            setLoading(false);
-            console.error('Error:', error);
-          })
+              setData(response.data.data);
+            }).catch(function (error) {
+              // masuk ke server tapi return error (unautorized dll)
+              if (error.response) {
+                //gagal login
+                if(error.response.data.messsage == 'Unauthorized')
+                {
+                  SecureStore.deleteItemAsync('secured_token');
+                  SecureStore.deleteItemAsync('secured_name');
+                  router.replace('/');
+                }
+                // console.error(error.response.data);
+                // console.error(error.response.status);
+                // console.error(error.response.headers);
+              } else if (error.request) {
+                // ga konek ke server
+                alert('Check Koneksi anda !')
+                console.error(error.request);
+              } else {
+                // error yang ga di sangka2
+                console.error("Error", error.message);
+              }
+          });
         });
       }
-
+      
     return(
       <SafeAreaView style={styles.container}>
 
