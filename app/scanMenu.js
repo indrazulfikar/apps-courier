@@ -5,6 +5,20 @@ import { BarCodeScanner } from 'expo-barcode-scanner';
 import { useEffect, useState } from 'react';
 import { Icon } from '@rneui/themed';
 
+//images
+import scangagalpickup from '../assets/scangagalpickup.png';
+import scansuccesspickup from '../assets/scansuccesspickup.png';
+import terimadc from '../assets/terimadc.png';
+import dikirimkurir from '../assets/dikirimkurir.png';
+import selesai from '../assets/selesai.png';
+import pending from '../assets/pending.png';
+import motormini from '../assets/motormini.png';
+import gagal from '../assets/gagal.png';
+import refunddc from '../assets/refunddc.png';
+import kurirrefund from '../assets/kurirrefund.png';
+import refundfinish from '../assets/refundfinish.png';
+import refundtake from '../assets/refundtake.png';
+
 export default function scanMenu() {
     
     const [hasPermission, setHasPermission] = useState(null);
@@ -12,23 +26,24 @@ export default function scanMenu() {
     const [choice, setChoice] = useState(null);
     const [openScanner, setOpenScanner] = useState(false);
     const [awb, setAwb] = useState(null);
-    const metode = [
-      { name : 'Gagal PickUp', uri : ''},
-      { name : 'Pickup Sukses', uri : ''},
-      { name : 'Diterima DC', uri : ''},
-      { name : 'Keluar DC', uri : ''},
-      { name : 'Sampai DC', uri : ''},
-      { name : 'Dikirim Kurir', uri : ''},
-      { name : 'Selesai', uri : ''},
-      { name : 'Pending', uri : ''},
-      { name : 'Call Attempt 2', uri : ''},
-      { name : 'Call Attempt 3', uri : ''},
-      { name : 'Gagal', uri : ''},
-      { name : 'Refund Diterima DC', uri : ''},
-      { name : 'Refund Keluar DC', uri : ''},
-      { name : 'Kurir Refund', uri : ''},
-      { name : 'Refund Finish', uri : ''},
-      { name : 'Refund Diambil', uri : ''},
+
+    const menuButton = [
+      { name : 'Gagal PickUp', endPoint : '', code: '', img : scangagalpickup},
+      { name : 'Pickup Sukses', endPoint : '', code: '', img : scansuccesspickup},
+      { name : 'Diterima DC', endPoint : '', code: '', img : terimadc},
+      { name : 'Keluar DC', endPoint : '', code: '', img : terimadc},
+      { name : 'Sampai DC', endPoint : '', code: '', img : terimadc},
+      { name : 'Dikirim Kurir', endPoint : '', code: '', img : dikirimkurir},
+      { name : 'Selesai', endPoint : '', code: '', img : selesai},
+      { name : 'Pending', endPoint : '', code: '', img : pending},
+      { name : 'Call Attempt 2', endPoint : '', code: '', img : motormini},
+      { name : 'Call Attempt 3', endPoint : '', code: '', img : motormini},
+      { name : 'Gagal', endPoint : '', code: '', img : gagal},
+      { name : 'Refund Diterima DC', endPoint : '', code: '', img : refunddc},
+      { name : 'Refund Keluar DC', endPoint : '', code: '', img : refunddc},
+      { name : 'Kurir Refund', endPoint : '', code: '', img : kurirrefund},
+      { name : 'Refund Finish', endPoint : '', code: '', img : refundfinish},
+      { name : 'Refund Diambil', endPoint : '', code: '', img : refundtake},
     ];
 
     useEffect(() => {
@@ -85,71 +100,14 @@ export default function scanMenu() {
         { ! openScanner &&
             <View style={{flex:10 }}>
           <ScrollView contentContainerStyle={{ flexDirection:'row', flexWrap:'wrap', justifyContent:'flex-start', alignItems:'flex-start', padding:10  }}>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(0)}}>
-                <Image source={require('../assets/scangagalpickup.png')} />
-                <Text style={styles.contentText}>Gagal Pickup</Text>
+            {  
+              menuButton.map((l, i) => (
+            <TouchableOpacity key={i} style={styles.contentItem} onPress={()=>{handlerChoice(l.code)}}>
+                <Image source={l.img} style={styles.iconImage} />
+                <Text style={styles.contentText}>{l.name}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(1)}}>
-              <Image source={require('../assets/scansuccesspickup.png')} />
-              <Text style={styles.contentText}>Pickup Sukses</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(3)}}>
-              <Image source={require('../assets/terimadc.png')} />
-              <Text style={styles.contentText}>Diterima DC</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(3)}}>
-              <Image source={require('../assets/terimadc.png')} />
-              <Text style={styles.contentText}>Keluar DC</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(4)}}>
-              <Image source={require('../assets/terimadc.png')} />
-              <Text style={styles.contentText}>Sampai DC</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(5)}}>
-              <Image source={require('../assets/dikirimkurir.png')} />
-              <Text style={styles.contentText}>Dikirim Kurir</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(6)}}>
-              <Image source={require('../assets/selesai.png')} />
-              <Text style={styles.contentText}>Selesai</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(7)}}>
-              <Image source={require('../assets/pending.png')} />
-              <Text style={styles.contentText}>Pending</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(8)}}>
-              <Image source={require('../assets/motormini.png')} />
-              <Text style={styles.contentText}>Call Attempt 2</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(9)}}>
-              <Image source={require('../assets/motormini.png')} />
-              <Text style={styles.contentText}>Call Attempt 3</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(10)}}>
-              <Image source={require('../assets/gagal.png')} />
-              <Text style={styles.contentText}>Gagal</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(11)}}>
-              <Image source={require('../assets/refunddc.png')} />
-              <Text style={styles.contentText}>Refund Diterima DC</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(12)}}>
-              <Image source={require('../assets/refunddc.png')} />
-              <Text style={styles.contentText}>Refund Keluar DC</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(13)}}>
-              <Image source={require('../assets/kurirrefund.png')} />
-              <Text style={styles.contentText}>Kurir Refund</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(14)}}>
-              <Image source={require('../assets/refundfinish.png')} />
-              <Text style={styles.contentText}>Refund Finish</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.contentItem} onPress={()=>{handlerChoice(15)}}>
-              <Image source={require('../assets/refundtake.png')} />
-              <Text style={styles.contentText}>Refund Diambil</Text>
-            </TouchableOpacity>
-            
+              ))
+            }
         </ScrollView>
         </View>
         }
@@ -175,6 +133,9 @@ export default function scanMenu() {
       borderRadius:10,
       alignItems:'center',
       justifyContent:'space-evenly',
+    },
+    iconImage:{
+      resizeMode : 'contain'
     },
     contentText : {
       fontSize:12,
