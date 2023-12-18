@@ -1,9 +1,12 @@
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import Header from './_components/Header';
 import Footer from './_components/Footer';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { useEffect, useState } from 'react';
 import { Icon } from '@rneui/themed';
+import { HostUri } from './_components/HostUri';
+import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
 
 //images
 import scangagalpickup from '../assets/scangagalpickup.png';
@@ -26,24 +29,25 @@ export default function scanMenu() {
     const [choice, setChoice] = useState(null);
     const [openScanner, setOpenScanner] = useState(false);
     const [awb, setAwb] = useState(null);
+    const [alasan, setAlasan] = useState('');
 
     const menuButton = [
-      { name : 'Gagal PickUp', endPoint : '', code: '', img : scangagalpickup},
-      { name : 'Pickup Sukses', endPoint : '', code: '', img : scansuccesspickup},
-      { name : 'Diterima DC', endPoint : '', code: '', img : terimadc},
-      { name : 'Keluar DC', endPoint : '', code: '', img : terimadc},
-      { name : 'Sampai DC', endPoint : '', code: '', img : terimadc},
-      { name : 'Dikirim Kurir', endPoint : '', code: '', img : dikirimkurir},
-      { name : 'Selesai', endPoint : '', code: '', img : selesai},
-      { name : 'Pending', endPoint : '', code: '', img : pending},
-      { name : 'Call Attempt 2', endPoint : '', code: '', img : motormini},
-      { name : 'Call Attempt 3', endPoint : '', code: '', img : motormini},
-      { name : 'Gagal', endPoint : '', code: '', img : gagal},
-      { name : 'Refund Diterima DC', endPoint : '', code: '', img : refunddc},
-      { name : 'Refund Keluar DC', endPoint : '', code: '', img : refunddc},
-      { name : 'Kurir Refund', endPoint : '', code: '', img : kurirrefund},
-      { name : 'Refund Finish', endPoint : '', code: '', img : refundfinish},
-      { name : 'Refund Diambil', endPoint : '', code: '', img : refundtake},
+      { name : 'Gagal PickUp', code: '3', img : scangagalpickup},
+      { name : 'Pickup Sukses', code: '4', img : scansuccesspickup},
+      { name : 'Diterima DC', code: '5', img : terimadc},
+      { name : 'Keluar DC', code: '6', img : terimadc},
+      { name : 'Sampai DC', code: '7', img : terimadc},
+      { name : 'Dikirim Kurir', code: '8', img : dikirimkurir},
+      { name : 'Selesai', code: '9', img : selesai},
+      { name : 'Pending',code: '19', img : pending},
+      { name : 'Call Attempt 2', code: '11', img : motormini},
+      { name : 'Call Attempt 3', code: '12', img : motormini},
+      { name : 'Gagal', code: '13', img : gagal},
+      { name : 'Refund Diterima DC', code: '14', img : refunddc},
+      { name : 'Refund Keluar DC',code: '15', img : refunddc},
+      { name : 'Kurir Refund', code: '16', img : kurirrefund},
+      { name : 'Refund Finish', code: '17', img : refundfinish},
+      { name : 'Refund Diambil', code: '18', img : refundtake},
     ];
 
     useEffect(() => {
@@ -58,10 +62,30 @@ export default function scanMenu() {
         setScanned(true);
         setOpenScanner(false);
         setAwb(data);
-        alert(`AWB ${data} Ditandai ${metode[choice].name} !`);
+        let name = menuButton.find(x => x.code === choice).name;
+        Alert.alert(
+          'Jadikan '+name+' ?',
+          'awb '+data,
+          [
+            {
+              text: 'Cancel',
+              style: 'cancel',
+            },
+            {
+              text : 'Save',
+              onPress: () => updateAwb(data,choice, alasan),
+              style : 'default'
+            }
+          ],
+          {
+            cancelable: true,
+          },
+        );
+        // alert(`AWB ${data} Ditandai ${metode[choice].name} !`);
     };
 
     const handlerChoice = (number) => {
+        let needAlasan = [];
         setChoice(number);
         setOpenScanner(true);
     }
@@ -71,6 +95,67 @@ export default function scanMenu() {
     }
     if (hasPermission === false) {
         return <Text>No access to camera</Text>;
+    }
+
+    const updateAwb = async(awb, code, alasan = '')=>
+    {
+      await SecureStore.getItemAsync('secured_token').then((token) => {
+        axios({
+          method: "post",
+          url: HostUri+'scan',
+          headers: {
+            "Content-Type": 'application/json',
+            "Authorization" : `Bearer ${token}`,
+          },
+          data :{
+            awb: awb,
+            selected_tracking: code,
+            alasan : alasan
+          }
+        }).then(function (response) {
+            // berhasil
+            // setLoading(false);
+            alert('Success update '+awb+' '+menuButton.find(x => x.code === choice).name)
+          }).catch(function (error) {
+            // masuk ke server tapi return error (unautorized dll)
+            if (error.response) {
+              //gagal login
+              if(error.response.data.message == 'Unauthorized')
+              {
+                SecureStore.deleteItemAsync('secured_token');
+                SecureStore.deleteItemAsync('secured_name');
+                router.replace('/');
+              }
+              if(error.response.data.message == 'data not found')
+              {
+                Alert.alert(
+                  'Gagal Update',
+                  'awb '+awb+' '+error.response.data.message,
+                  [
+                    {
+                      text: 'Ok',
+                      style: 'cancel',
+                    }
+                  ],
+                  {
+                    cancelable: true,
+                  },
+                );
+              }
+              // console.error(error.response.data);
+              // console.error(error.response.status);
+              // console.error(error.response.headers);
+            } else if (error.request) {
+              // ga konek ke server
+              alert('Check Koneksi anda !')
+              console.error(error.request);
+            } else {
+              // error yang ga di sangka2
+              console.error("Error", error.message);
+            }
+        });
+        
+      });
     }
 
   return (
@@ -99,7 +184,7 @@ export default function scanMenu() {
         </View>
         { ! openScanner &&
             <View style={{flex:10 }}>
-          <ScrollView contentContainerStyle={{ flexDirection:'row', flexWrap:'wrap', justifyContent:'flex-start', alignItems:'flex-start', padding:10  }}>
+          <ScrollView contentContainerStyle={{ flexDirection:'row', flexWrap:'wrap', justifyContent:'space-evenly', alignItems:'flex-start', padding:10  }}>
             {  
               menuButton.map((l, i) => (
             <TouchableOpacity key={i} style={styles.contentItem} onPress={()=>{handlerChoice(l.code)}}>
@@ -133,6 +218,7 @@ export default function scanMenu() {
       borderRadius:10,
       alignItems:'center',
       justifyContent:'space-evenly',
+      width: '20%'
     },
     iconImage:{
       resizeMode : 'contain'
@@ -140,7 +226,6 @@ export default function scanMenu() {
     contentText : {
       fontSize:12,
       marginTop:3,
-      width:60,
       height:45,
       textAlign:'center'
     },

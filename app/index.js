@@ -49,7 +49,7 @@ export default function index() {
         // masuk ke server tapi return error (unautorized dll)
         if (error.response) {
           //gagal login
-          if(error.response.data.messsage == 'Unauthorized')
+          if(error.response.data.message == 'Unauthorized')
           {
             alert('telp / password salah !')
           }

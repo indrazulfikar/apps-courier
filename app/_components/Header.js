@@ -63,7 +63,7 @@ const Header = (props) => {
         // masuk ke server tapi return error (unautorized dll)
         if (error.response) {
           //gagal login
-          if(error.response.data.messsage == 'Unauthorized')
+          if(error.response.data.message == 'Unauthorized')
           {
             SecureStore.deleteItemAsync('secured_token');
             SecureStore.deleteItemAsync('secured_name');
@@ -89,7 +89,7 @@ return (
       leftComponent={{ text : title, style: styles.subheaderText }}
       rightComponent={
         // { text: 'kurir_pickup_'+name, style: styles.heading }
-        <Text style={styles.heading} onPress={toggleLogout}>kurir_pickup_{name}</Text> 
+        <Text style={styles.heading} onPress={toggleLogout}>{name}</Text> 
       }
       centerComponent={{}}
       backgroundColor = '#ff0000'

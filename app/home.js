@@ -148,7 +148,8 @@ const styles = StyleSheet.create({
     borderWidth:1, 
     borderRadius:10,
     alignItems:'center',
-    justifyContent:'space-evenly'
+    justifyContent:'space-evenly',
+    width:'30%'
   },
   iconImage:{
     resizeMode : 'contain'

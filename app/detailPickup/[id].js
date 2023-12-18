@@ -36,7 +36,7 @@ export default function detailListPickup() {
           // masuk ke server tapi return error (unautorized dll)
           if (error.response) {
             //gagal login
-            if(error.response.data.messsage == 'Unauthorized')
+            if(error.response.data.message == 'Unauthorized')
             {
               SecureStore.deleteItemAsync('secured_token');
               SecureStore.deleteItemAsync('secured_name');
@@ -82,7 +82,7 @@ export default function detailListPickup() {
             // masuk ke server tapi return error (unautorized dll)
             if (error.response) {
               //gagal login
-              if(error.response.data.messsage == 'Unauthorized')
+              if(error.response.data.message == 'Unauthorized')
               {
                 SecureStore.deleteItemAsync('secured_token');
                 SecureStore.deleteItemAsync('secured_name');
