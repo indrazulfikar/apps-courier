@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { router, Link } from "expo-router";
 import { HostUri } from './HostUri';
 import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
 
 const Header = (props) => {
 
@@ -46,32 +47,40 @@ const Header = (props) => {
 
   const logoutHandler = async () =>
   {
-    await fetch(HostUri+'logout', {
-      method: 'POST',
+    await axios({
+      method: "get",
+      url: HostUri+'logout',
       headers: {
-        'Accept': 'application/json',
-        'Authorization' : 'Bearer '+token,
+        "Content-Type": 'application/json',
+        "Authorization" : `Bearer ${token}`,
       },
-      // body: JSON.stringify(formData),
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then( (result) => {
-      // await SecureStore.setItemAsync('token', result.data.token);
-      // await SecureStore.setItemAsync('name', result.data.name);
-      del('secured_token');
-      del('secured_name');
-      console.log(result);
-      router.replace('/');
-    })
-    .catch(error => {
-      console.error('Error:', error);
+    }).then(function (response) {
+        // berhasil
+        del('secured_token');
+        del('secured_name');
+        router.replace('/');
+      }).catch(function (error) {
+        // masuk ke server tapi return error (unautorized dll)
+        if (error.response) {
+          //gagal login
+          if(error.response.data.message == 'Unauthorized')
+          {
+            SecureStore.deleteItemAsync('secured_token');
+            SecureStore.deleteItemAsync('secured_name');
+            router.replace('/');
+          }
+          // console.error(error.response.data);
+          // console.error(error.response.status);
+          // console.error(error.response.headers);
+        } else if (error.request) {
+          // ga konek ke server
+          alert('Check Koneksi anda !')
+          console.error(error.request);
+        } else {
+          // error yang ga di sangka2
+          console.error("Error", error.message);
+        }
     });
-
   }
 
 return (
@@ -80,7 +89,7 @@ return (
       leftComponent={{ text : title, style: styles.subheaderText }}
       rightComponent={
         // { text: 'kurir_pickup_'+name, style: styles.heading }
-        <Text style={styles.heading} onPress={toggleLogout}>kurir_pickup_{name}</Text> 
+        <Text style={styles.heading} onPress={toggleLogout}>{name}</Text> 
       }
       centerComponent={{}}
       backgroundColor = '#ff0000'

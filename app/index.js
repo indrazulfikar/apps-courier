@@ -5,6 +5,7 @@ import { Divider } from '@rneui/themed';
 import { StyleSheet, Text, View, Image, TextInput, Button, TouchableOpacity} from "react-native";
 import { HostUri } from "./_components/HostUri";
 import * as SecureStore from 'expo-secure-store';
+import axios from "axios";
 
 export default function index() {
 
@@ -29,42 +30,47 @@ export default function index() {
   }
   
   const loginHandler = async () => {
-    const formData = {
-      telp: phone,
-      password: password,
-    };
-    
-    await fetch(HostUri+'login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    // console.log('masuk')
+    await axios.post(
+      HostUri+'login',
+      { telp: phone, password: password,},
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       },
-      body: JSON.stringify(formData),
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then( (result) => {
-      // await SecureStore.setItemAsync('token', result.data.token);
-      // await SecureStore.setItemAsync('name', result.data.name);
-      save('secured_token', result.data.token);
-      save('secured_name', result.data.name);
-      console.log(result.data);
-      router.replace('/home');
-    })
-    .catch(error => {
-      console.error('Error:', error);
+      ).then(function (response) {
+        // berhasil
+        // console.log(response);
+        save('secured_token', response.data.data.token);
+        save('secured_name', response.data.data.name);
+        router.replace('/home');
+      }).catch(function (error) {
+        // masuk ke server tapi return error (unautorized dll)
+        if (error.response) {
+          //gagal login
+          if(error.response.data.message == 'Unauthorized')
+          {
+            alert('telp / password salah !')
+          }
+          // console.error(error.response.data);
+          // console.error(error.response.status);
+          // console.error(error.response.headers);
+        } else if (error.request) {
+          // ga konek ke server
+          alert('Check Koneksi anda !')
+          console.error(error.request);
+        } else {
+          // error yang ga di sangka2
+          console.error("Error", error.message);
+        }
     });
-
   } 
 
   return (
 
     <View style={styles.container}>
-    <Text style={{ fontSize:34, color:'white' }}>kirimdisini</Text>
+    <Image style={styles.imageLogo} source={require("../assets/icondepan.png")} />
     <Image style={styles.image} source={require("../assets/logo-login.png")} />
       <StatusBar style="auto" />
 
@@ -116,6 +122,12 @@ const styles = StyleSheet.create({
 
   image: {
     marginBottom: 40,
+  },
+
+  imageLogo :{
+    width:150,
+    height:80,
+    borderRadius:5
   },
 
   inputView: {

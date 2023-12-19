@@ -2,19 +2,38 @@ import { StyleSheet, Text, SafeAreaView, View, ScrollView} from 'react-native';
 import Header from '../_components/Header';
 import Footer from '../_components/Footer';
 import { useState, useEffect } from 'react';
-import AccordionPickUp from '../_components/AccordionPickUp';
+import { router } from 'expo-router';
+import AccordionDelivery from '../_components/AccordionDelivery';
 import { Divider, Skeleton } from '@rneui/themed';
 import { useLocalSearchParams } from 'expo-router';
+import CanvasCamera from '../_components/CanvasCamera';
 import { HostUri } from '../_components/HostUri';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 
-export default function detailListPickup() {
+export default function detailListDelivery() {
     const { id } = useLocalSearchParams();
     const [bigdata, setBigData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [err, setErr] = useState('')
-    
+    const [startCamera, setStartCamera] = useState(false);
+    const [imageUri, setImageUri] = useState('');
+    // const [choice, setChoice] = useState('');
+    // const [reasonCheck, setReasonCheck] = useState('');
+    // const [reasonText, setReasonText] = useState('');
+    // const [awb, setAwb] = useState('');
+    // const [name, setName] = useState('');
+    const [formData, setFormData] = useState({
+      shipping_id: '',
+      selected_tracking: '',
+      alasan : '',
+      image : '',
+      name : '',
+    });
+
+    const choiceList = [9, 13];
+    const reasonList = ['Dangerous Goods', 'Invalid Address', 'Packing Rusak', 'Paket Belum Siap', 'Alasan Lain'];
+
     useEffect(() => {
         getData();
     }, []);
@@ -23,7 +42,7 @@ export default function detailListPickup() {
     await SecureStore.getItemAsync('secured_token').then((token) => {
       axios({
         method: "get",
-        url: HostUri+`pickup/seller/${id}`,
+        url: HostUri+`delivery/seller/${id}`,
         headers: {
           "Content-Type": 'application/json',
           "Authorization" : `Bearer ${token}`,
@@ -56,24 +75,44 @@ export default function detailListPickup() {
       });
     });
     }
-    const onPressUpdate = async (shipping_id, selected_choice = null, reason = '') =>{
-        // choice
-        //   {key:'1', value:'Pickup Sukses'},
-        //   {key:'2', value:'Pickup Gagal'},
-        let choice = [4, 0];
-        // ALL REQUEST shipping_id, selected_tracking, alasan
+
+    const onPressUpdate = (awb_return, choice_return = '', name_return = '', check_return = '', reason_return = '') => {
+      if(choice_return == 1){
+
+      }
+      if(choice_return == 2)
+      {
+        updateShipping(awb_return, choice_return, name_return, check_return, reason_return);
+      }
+    }
+
+    const returnImage = (uri) =>
+    {
+      setImageUri(uri);
+      setStartCamera(false);
+      updateShipping();
+    }
+    const updateShipping = async (awb, selected_choice, name, check, reason) =>{
+      console.log('masuk');
+      // choice
+      //   {key:'9', value:'finish'},
+      //   {key:'13', value:'failed'},
+
+        // ALL REQUEST shipping_id, selected_tracking, alasan, image, name
         await SecureStore.getItemAsync('secured_token').then((token) => {
         axios({
           method: "post",
-          url: HostUri+'pickup/update',
+          url: HostUri+'delivery/update',
           headers: {
             "Content-Type": 'application/json',
             "Authorization" : `Bearer ${token}`,
           },
-          data : {
-            shipping_id: shipping_id,
-            selected_tracking: choice[(selected_choice-1)],
-            alasan : reason
+          data :{
+            shipping_id: id,
+            selected_tracking: choiceList[(selected_choice-1)],
+            alasan : (check == 5) ? reason : reasonList[(check-1)],
+            image : '',
+            name : name,
         }
         }).then(function (response) {
             // berhasil
@@ -100,7 +139,7 @@ export default function detailListPickup() {
               console.error("Error", error.message);
             }
         });
-    });
+    });  
     }
 
     return (
@@ -123,6 +162,12 @@ export default function detailListPickup() {
           />
 
           <View style={styles.listContainer}>
+          {
+            startCamera &&
+            <CanvasCamera startCamera={startCamera} returnImage = {returnImage}/>
+          }
+          {!startCamera && 
+            (
             <ScrollView>
             {
                 loading &&
@@ -144,10 +189,12 @@ export default function detailListPickup() {
               }
               {
                 bigdata.map((l, i) => (
-                    <AccordionPickUp data={ l } onPressUpdate ={onPressUpdate} />
+                    <AccordionDelivery data={ l } onPressUpdate ={onPressUpdate} reasonList = {reasonList} key={l.shipping_awb} />
                 ))
               }
             </ScrollView>
+            )
+            }
           </View>
 
           <Footer  />

@@ -6,6 +6,16 @@ import Footer from './_components/Footer';
 import { useState, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
 
+//icons 
+import mobil from '../assets/mobil.png';
+import mobilb from '../assets/mobil2.png';
+import motor from '../assets/motor.png';
+import box from '../assets/box.png';
+import boxgagal from '../assets/boxgagal.png';
+import dikirimkurir from '../assets/dikirimkurir.png';
+import scan from '../assets/scan.png';
+import sirine from '../assets/sirine.png';
+
 export default function home() {
 
   const [token, setToken] = useState("");
@@ -35,19 +45,19 @@ export default function home() {
         <View style={styles.contentList}>
           <Link href="/listPickup" asChild>
             <TouchableOpacity style={styles.contentItem}>
-              <Image source={require('../assets/mobil.png')} />
+              <Image source={mobil} style={styles.iconImage}/>
               <Text style={styles.contentText}>List Pickup</Text>
             </TouchableOpacity>
           </Link>
           <Link href="/listPickUpSuccess" asChild>
-            <TouchableOpacity   style={styles.contentItem}>
-              <Image source={require('../assets/motor.png')} />
+            <TouchableOpacity style={styles.contentItem}>
+              <Image source={motor} />
               <Text style={styles.contentText}>Pickup Sukses</Text>
             </TouchableOpacity>
           </Link>
           <Link href="/listPickUpFail" asChild>
             <TouchableOpacity style={styles.contentItem}>
-              <Image source={require('../assets/box.png')} />
+              <Image source={box} />
               <Text style={styles.contentText}>Gagal Pickup</Text>
             </TouchableOpacity>
           </Link>
@@ -56,19 +66,19 @@ export default function home() {
         <View style={styles.contentList}>
           <Link href="/listDelivery" asChild>
             <TouchableOpacity style={styles.contentItem}>
-              <Image source={require('../assets/mobil2.png')} />
+              <Image source={mobilb} />
               <Text style={styles.contentText}>List Delivery</Text>
             </TouchableOpacity>
           </Link>
           <Link href="/listDeliverySuccess" asChild>
             <TouchableOpacity   style={styles.contentItem}>
-              <Image source={require('../assets/dikirimkurir.png')} />
+              <Image source={dikirimkurir} />
               <Text style={styles.contentText}>Delivery Sukses</Text>
             </TouchableOpacity>
           </Link>
           <Link href="/listDeliveryFail" asChild>
             <TouchableOpacity style={styles.contentItem}>
-              <Image source={require('../assets/boxgagal.png')} />
+              <Image source={boxgagal} />
               <Text style={styles.contentText}>Delivery Gagal</Text>
             </TouchableOpacity>
           </Link>
@@ -77,12 +87,12 @@ export default function home() {
         <View style={styles.contentList}>
           <Link href="/scanMenu" asChild>
             <TouchableOpacity style={styles.contentItem}>
-              <Image source={require('../assets/scan.png')} />
+              <Image source={scan} />
               <Text style={styles.contentText}>Scan AWB</Text>
             </TouchableOpacity>
           </Link>
           <TouchableOpacity style={styles.contentItem}>
-            <Image source={require('../assets/sirine.png')} />
+            <Image source={sirine} />
             <Text style={styles.contentText}>Emergency</Text>
           </TouchableOpacity>
         </View>
@@ -138,7 +148,11 @@ const styles = StyleSheet.create({
     borderWidth:1, 
     borderRadius:10,
     alignItems:'center',
-    justifyContent:'space-evenly'
+    justifyContent:'space-evenly',
+    width:'30%'
+  },
+  iconImage:{
+    resizeMode : 'contain'
   },
   contentText : {
     fontSize:12,

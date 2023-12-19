@@ -10,15 +10,15 @@ const AccordionDelivery = (props) => {
     const [selected, setSelected] = useState(1);
     const [name, setName] = useState('');
     const [reason, setReason] = useState('');
-    
+    const onPressUpdate = props.onPressUpdate;
+    const reasonList = props.reasonList;
     const choice = [
       {key:'1', value:'Delivery Sukses'},
       {key:'2', value:'Delivery Gagal'},
     ];
-    const reasonList = ['Dangerous Goods', 'Invalid Address', 'Packing Rusak', 'Paket Belum Siap', 'Alasan Lain'];
+
    
     let data = props.data;
-    const updateAwb = props.updateAwb;
 
     const toggleModal = () => {
       setShowModal(!showModal);
@@ -26,9 +26,9 @@ const AccordionDelivery = (props) => {
       setSelected(1);
     };
 
-    const updateHandler= (id) => {
+    const updateHandler= (awb) => {
       toggleModal();
-      updateAwb(id,selected, name, reason);
+      onPressUpdate(awb, selected, name, checked, reason);
     }
 
     return(
@@ -36,8 +36,8 @@ const AccordionDelivery = (props) => {
         <ListItem.Accordion
         content={
           <ListItem.Content>
-            <ListItem.Title><Text style={{ color:'white' }}>{data.name}</Text></ListItem.Title>
-            <ListItem.Subtitle><Text style={{ color:'white' }}>{data.id}</Text></ListItem.Subtitle>
+            <ListItem.Title><Text style={{ color:'white' }}>{data.transaction_address_name}</Text></ListItem.Title>
+            <ListItem.Subtitle><Text style={{ color:'white' }}>{data.shipping_awb}</Text></ListItem.Subtitle>
           </ListItem.Content>
         }
         isExpanded={expanded}
@@ -51,10 +51,12 @@ const AccordionDelivery = (props) => {
           <ListItem.Content>
             <View style={{ flexDirection:'row' }}>
                 <View style={{ flex:1 }}>
-                    <Text>{data.address}</Text>
-                    <Text>Telp. {data.phone}</Text>
-                    <Text>Muatan : {data.weight} gram</Text>
-                    <Text>Service : {data.service}</Text>
+                    <Text>{data.transaction_address_detail}</Text>
+                    {data.kelurahan && <Text>Kel. {data.kelurahan}{data.city_name && <Text> Kota. {data.city_name}</Text>}</Text>}
+                    {data.province_name && <Text>Prov. {data.province_name} {data.zipcode && <Text>{data.zipcode} </Text>}</Text>}
+                    {data.telp && <Text>Telp. {data.telp}</Text>}
+                    {data.shipping_product_weight && <Text>Berat {data.shipping_product_weight} gram</Text>}
+                    {data.service && <Text>Service {data.service}</Text>}
                 </View>
                 <View><TouchableOpacity><Text onPress={toggleModal} style={{ color:'blue',  fontWeight:'bold' }}>Update</Text></TouchableOpacity></View>
             </View>
@@ -84,54 +86,49 @@ const AccordionDelivery = (props) => {
               <View style={{ padding:10 }}>
                 <Text>Diterima Oleh :</Text>
                 <Input onChangeText={setName}/>
-              </View>
-              
-            }
-            { 
-              selected == 1 
-              && 
-              <TouchableOpacity onPress={()=>{ updateHandler(data.id)}}>
+                <TouchableOpacity onPress={()=>{ updateHandler(data.shipping_awb)}}>
                 <View style={{ borderColor:'white', backgroundColor:'red', borderWidth:2, borderRadius : 10, padding:10, alignItems:'center'}}>
                   <Text style={{ color:"white", fontWeight:'bold' }}>Update dan Ambil Foto</Text>
                 </View>
               </TouchableOpacity>
+              </View>              
             }
+
             { 
               selected == 2 
               && 
-              reasonList.map((l, i) => (
-                <CheckBox
-                  key={i}
-                  title={l}
-                  containerStyle={{ backgroundColor: 'white', borderWidth: 0 }}
-                  checkedIcon="dot-circle-o"
-                  uncheckedIcon="circle-o"
-                  checked={checked === i + 1}
-                  onPress={() => setChecked(i + 1)}
-                  checkedColor='red'
+              <View>
+                {
+                reasonList.map((l, i) => (
+                  <CheckBox
+                    key={i}
+                    title={l}
+                    containerStyle={{ backgroundColor: 'white', borderWidth: 0 }}
+                    checkedIcon="dot-circle-o"
+                    uncheckedIcon="circle-o"
+                    checked={checked === i + 1}
+                    onPress={() => setChecked(i + 1)}
+                    checkedColor='red'
+                  />
+                ))
+                }
+                {
+                  checked == 5
+                  &&
+                  <Input onChangeText={setReason} />
+                }
+                <Dialog.Actions>
+                <Dialog.Button
+                  title="UPDATE"
+                  onPress={() => {
+                    updateHandler(data.shipping_awb);
+                  }}
+                  titleStyle={{ color:'red' }}
                 />
-              ))
-            }
-            {
-              checked == 5
-              &&
-              <Input onChangeText={setReason} />
-            }
-            { 
-              selected == 2 
-              && 
-              <Dialog.Actions>
-          <Dialog.Button
-            title="UPDATE"
-            onPress={() => {
-              updateHandler(data.id);
-            }}
-            titleStyle={{ color:'red' }}
-          />
-          <Dialog.Button title="CANCEL" onPress={toggleModal} titleStyle={{ color:'red' }}/>
-        </Dialog.Actions>
-            }
-         
+                <Dialog.Button title="CANCEL" onPress={toggleModal} titleStyle={{ color:'red' }}/>
+              </Dialog.Actions>
+              </View>
+            }         
           </Dialog>
         </View>
     );

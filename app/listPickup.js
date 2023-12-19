@@ -1,12 +1,13 @@
 import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView} from 'react-native';
 import { ListItem, Divider, Skeleton } from '@rneui/themed';
-import { Link, Stack } from "expo-router";
+import { Link } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
 import {SelectList} from 'react-native-dropdown-select-list';
 import { HostUri } from './_components/HostUri';
 import { useState, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
 
 
 export default function listPickup() {
@@ -27,29 +28,40 @@ export default function listPickup() {
 
   const getData = async () => {
     await SecureStore.getItemAsync('secured_token').then((token) => {
-      fetch(HostUri+'pickup/seller', {
-        method: 'GET',
+      axios({
+        method: "get",
+        url: HostUri+'pickup/seller',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization' : 'Bearer '+token       
+          "Content-Type": 'application/json',
+          "Authorization" : `Bearer ${token}`,
         },
-      })
-      .then(response => {
-        if (!response.ok) {
+      }).then(function (response) {
+          // berhasil
           setLoading(false);
-          throw new Error('Disconnected please check connection');
-        }
-        return response.json();
-      })
-      .then( (result) => {
-        setData(result.data);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.log(token);
-        setLoading(false);
-        console.error('Error:', error);
-      })
+          setData(response.data.data);
+        }).catch(function (error) {
+          // masuk ke server tapi return error (unautorized dll)
+          if (error.response) {
+            //gagal login
+            if(error.response.data.message == 'Unauthorized')
+            {
+              SecureStore.deleteItemAsync('secured_token');
+              SecureStore.deleteItemAsync('secured_name');
+              router.replace('/');
+            }
+            // console.error(error.response.data);
+            // console.error(error.response.status);
+            // console.error(error.response.headers);
+          } else if (error.request) {
+            // ga konek ke server
+            alert('Check Koneksi anda !')
+            console.error(error.request);
+          } else {
+            // error yang ga di sangka2
+            console.error("Error", error.message);
+          }
+      });
+      
     });
   }
 

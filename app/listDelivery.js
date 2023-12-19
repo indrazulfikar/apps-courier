@@ -1,57 +1,68 @@
 import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView} from 'react-native';
-import { ListItem, Divider } from '@rneui/themed';
-import { router, Link } from "expo-router";
+import { ListItem, Divider, Skeleton } from '@rneui/themed';
+import { Link } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
 import {SelectList} from 'react-native-dropdown-select-list';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { HostUri } from './_components/HostUri';
+import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
 
 export default function listPickup() {
   const [selected, setSelected] = useState('');
-  const data = [
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
+  const [err, setErr] = useState('Disconnected Please Check your Connection !');
+  
+  const urut = [
     // {key:'1', value:'Seller', disabled:true},
     {key:'1', value:'Seller'},
     {key:'2', value:'Kelurahan'},
   ];
+  
+  useEffect(() => {
+    getData();
+  }, []);
 
-    const dummy = [
-        {
-          name: 'Pasti_Laku',
-          subtitle: 'Kel. Karang Tengah'
+  const getData = async () => {
+    await SecureStore.getItemAsync('secured_token').then((token) => {
+      axios({
+        method: "get",
+        url: HostUri+'delivery/seller',
+        headers: {
+          "Content-Type": 'application/json',
+          "Authorization" : `Bearer ${token}`,
         },
-        {
-          name: 'Jaya_Abadi',
-          subtitle: 'Kel. Karang Pinggir'
-        },
-        {
-          name: 'Seller_ID',
-          subtitle: 'Kel. Karang Mulya'
-        },
-        {
-          name: 'Parfum_ON',
-          subtitle: 'Kel. Karang Mangu'
-        },
-        {
-          name: 'Parfum_ON',
-          subtitle: 'Kel. Karang Mangu'
-        },
-        {
-          name: 'Parfum_ON',
-          subtitle: 'Kel. Karang Mangu'
-        },
-        {
-          name: 'Parfum_ON',
-          subtitle: 'Kel. Karang Mangu'
-        },
-        {
-          name: 'Parfum_ON',
-          subtitle: 'Kel. Karang Mangu'
-        },
-        {
-          name: 'Parfum_ON',
-          subtitle: 'Kel. Karang Mangu'
-        },
-      ]
+      }).then(function (response) {
+          // berhasil
+          setLoading(false);
+          setData(response.data.data);
+        }).catch(function (error) {
+          // masuk ke server tapi return error (unautorized dll)
+          if (error.response) {
+            //gagal login
+            if(error.response.data.message == 'Unauthorized')
+            {
+              SecureStore.deleteItemAsync('secured_token');
+              SecureStore.deleteItemAsync('secured_name');
+              router.replace('/');
+            }
+            // console.error(error.response.data);
+            // console.error(error.response.status);
+            // console.error(error.response.headers);
+          } else if (error.request) {
+            // ga konek ke server
+            alert('Check Koneksi anda !')
+            console.error(error.request);
+          } else {
+            // error yang ga di sangka2
+            console.error("Error", error.message);
+          }
+      });
+    });
+  }
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -65,7 +76,7 @@ export default function listPickup() {
             <View style={styles.dropdownContainer}>
               <SelectList 
                 setSelected={(val) => setSelected(val)} 
-                data={data} 
+                data={urut} 
                 save="value"
                 placeholder='Urutkan'
                 dropdownStyles={{ zIndex:999, minHeight:100, backgroundColor : 'white' }}
@@ -74,7 +85,7 @@ export default function listPickup() {
             </View>
           </View>
 
-          <View style={styles.totalContainer}><Text style={styles.totalText}>Total : 25 Seller</Text></View>
+          <View style={styles.totalContainer}><Text style={styles.totalText}>Total : {Object.keys(data).length} Seller</Text></View>
           
           <Divider
             style={{margin: 5 }}
@@ -85,15 +96,33 @@ export default function listPickup() {
 
           <View style={styles.listContainer}>
             <ScrollView>
-              {
-                dummy.map((l, i) => (
+            {
+              loading &&
+              <View style={{ flex:1, flexDirection:'column', padding:10 }}>
+                {
+                  [{},{},{},{},{},{},].map((l, i) => (
+                    <Skeleton
+                    // LinearGradientComponent={LinearGradient}
+                    animation="pulse"
+                    width={'100%'}
+                    height={60}
+                    style={{ marginBottom:5 }}
+                    key={i}
+                  />
+                    ))
+                }
+              </View>
+              
+            }
+              { !loading &&
+                data.map((l, i) => (
                   <ListItem key={i} bottomDivider Component={TouchableOpacity} >
                     <ListItem.Content>
-                      <ListItem.Title>{l.name}</ListItem.Title>
-                      <ListItem.Subtitle>{l.subtitle}</ListItem.Subtitle>
+                      <ListItem.Title>{l.transaction_address_name}</ListItem.Title>
+                      <ListItem.Subtitle>{l.subdistrict_name}</ListItem.Subtitle>
                     </ListItem.Content>
                     <ListItem.Content right>
-                      <ListItem.Subtitle ><Link href="/listDeliveryDetail" asChild><Text style={{ color:'blue' }}>Detail</Text></Link></ListItem.Subtitle>
+                      <ListItem.Subtitle ><Link href={"/detailDelivery/"+l.shipping_id} asChild><Text style={{ color:'blue' }}>Detail</Text></Link></ListItem.Subtitle>
                     </ListItem.Content>
                   </ListItem>
                 ))
