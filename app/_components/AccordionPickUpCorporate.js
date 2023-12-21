@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-nativ
 import { ListItem, Dialog, CheckBox } from '@rneui/themed';
 import {SelectList} from 'react-native-dropdown-select-list';
 
-const AccordionPickUp = (props) => {
+const AccordionPickUpCorporate = (props) => {
     const [expanded, setExpanded] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [checked, setChecked] = useState(1);
@@ -47,7 +47,7 @@ const AccordionPickUp = (props) => {
         <ListItem.Accordion
         content={
           <ListItem.Content>
-            <ListItem.Title><Text style={{ color:'white' }}>{data.shipping_awb}{ data.shipping_cod != 'no' && (<Text> - COD</Text>)}</Text></ListItem.Title>
+            <ListItem.Title><Text style={{ color:'white' }}>{data.order_corporate_trx_id}{ data.shipping_cod != 'no' && (<Text> - COD</Text>)}</Text></ListItem.Title>
           </ListItem.Content>
         }
         isExpanded={expanded}
@@ -188,4 +188,4 @@ const styles = StyleSheet.create({
     }
 });
     
-export default AccordionPickUp;
+export default AccordionPickUpCorporate;

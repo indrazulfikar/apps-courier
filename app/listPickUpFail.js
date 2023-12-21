@@ -4,75 +4,73 @@ import { router, Link } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
 import CustomDatePick from './_components/CustomDatePick';
+import { HostUri } from './_components/HostUri';
+import { useState, useEffect } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
+import AccordionPickUp from './_components/AccordionPickUp';
 
 export default function listPickUpFail() {
-    const dummy = [
-        {
-          awb: 'KD0923000000001',
-          reason: 'Dangerous Goods',
-          status: 'Gagal',
+
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
+  const [err, setErr] = useState('Disconnected Please Check your Connection !');
+  
+  useEffect(() => {
+    getData();
+  }, []);
+
+  const getData = async () => {
+    await SecureStore.getItemAsync('secured_token').then((token) => {
+      axios({
+        method: "get",
+        url: HostUri+'pickup/fail',
+        headers: {
+          "Content-Type": 'application/json',
+          "Authorization" : `Bearer ${token}`,
         },
-        {
-          awb: 'KD0923000000002',
-          reason: 'Paket Belum Siap',
-          status: 'Gagal',
-        },
-        {
-          awb: 'KD0923000000003',
-          reason: 'Packing Rusak',
-          status: 'Update',
-        },
-        {
-          awb: 'KD0923000000004',
-          reason: 'Invalid Address',
-          status: 'Update',
-        },
-        {
-          awb: 'KD0923000000005',
-          reason: 'Paket Belum Siap',
-          status: 'Update',
-        },
-        {
-          awb: 'KD0923000000006',
-          reason: 'Invalid Address',
-          status: 'Update',
-        },
-        {
-          awb: 'KD0923000000007',
-          reason: 'Invalid Address',
-          status: 'Update',
-        },
-        {
-          awb: 'KD0923000000008',
-          reason: 'Invalid Address',
-          status: 'Update',
-        },
-        {
-          awb: 'KD0923000000009',
-          reason: 'Invalid Address',
-          status: 'Update',
-        },
-        {
-          awb: 'KD0923000000010',
-          reason: 'Invalid Address',
-          status: 'Update',
-        },
-      ]
+      }).then(function (response) {
+          // berhasil
+          console.log(response.data.data)
+          setLoading(false);
+          setData(response.data.data);
+        }).catch(function (error) {
+          // masuk ke server tapi return error (unautorized dll)
+          if (error.response) {
+            //gagal login
+            if(error.response.data.message == 'Unauthorized')
+            {
+              SecureStore.deleteItemAsync('secured_token');
+              SecureStore.deleteItemAsync('secured_name');
+              router.replace('/');
+            }
+            // console.error(error.response.data);
+            // console.error(error.response.status);
+            // console.error(error.response.headers);
+          } else if (error.request) {
+            // ga konek ke server
+            alert('Check Koneksi anda !')
+            console.error(error.request);
+          } else {
+            // error yang ga di sangka2
+            console.error("Error", error.message);
+          }
+      });
+      
+    });
+  }
+
     return(
       <SafeAreaView style={styles.container}>
 
         <View style={styles.headerContainer}>
-          <Header title='List Pickup Gagal'/>
-        </View>
-
-        <View style={styles.headerChild}>
-          <Text style={styles.tanggal}>{ new Date().toLocaleDateString('id-ID', {weekday: 'long',  month: 'long', day:'2-digit', year :'numeric' }) }</Text>
-          <View style={styles.dropdownContainer}>
-          </View>
+          <Header title='Pickup Gagal'/>
         </View>
 
         <View style={styles.datepickContainer}>
-          <View style={{ margin:10 }}>
+          <View >
             <CustomDatePick />
           </View>
           <View>
@@ -80,39 +78,19 @@ export default function listPickUpFail() {
           </View>
         </View>
 
-        <View style={styles.totalContainer}>
-          <Text style={styles.totalText}>Total 32 AWB</Text>
-        </View>
-
         <Divider
-          style={{margin: 5 }}
+          style={{marginHorizontal: 5 }}
           color="red"
           width={2}
           orientation="horizontal"
         />
-
-        <View style={styles.listContainer}>
-          <ScrollView>
+          <ScrollView style={styles.listContainer}>
             {
-              dummy.map((l, i) => (
-                <ListItem key={i} bottomDivider Component={View}>
-                  <ListItem.Content>
-                    <ListItem.Subtitle><Text style={styles.tableHead}>AWB</Text></ListItem.Subtitle>
-                    <ListItem.Title><Text style={{ fontWeight:'bold' }}>{l.awb}</Text></ListItem.Title>
-                    <ListItem.Subtitle><Text style={styles.tableHead}>Alasan</Text></ListItem.Subtitle>
-                    <ListItem.Title>{l.reason}</ListItem.Title>
-                  </ListItem.Content>
-                  <ListItem.Content right>
-                    <ListItem.Subtitle><Text style={styles.tableHead}>Status</Text></ListItem.Subtitle>
-                    <ListItem.Title><Text style={{ color:'red' }}>{l.status}</Text></ListItem.Title>
-                    <ListItem.Subtitle ><TouchableOpacity><Text style={{ color:'blue' }}>Update</Text></TouchableOpacity></ListItem.Subtitle>
-                  </ListItem.Content>
-                </ListItem>
+              data.map((l, i) => (
+                <AccordionPickUp data={ l } key={i} />
               ))
             }
           </ScrollView>
-        </View>
-
         <Footer  />
       </SafeAreaView>
     )
@@ -125,7 +103,7 @@ const styles = StyleSheet.create({
     flexDirection:'column',
   },
   headerContainer : {
-    flex:2,
+    height:'10%'
   },
   headerChild : {
     flex: 1,
@@ -140,7 +118,7 @@ const styles = StyleSheet.create({
     flex:1
   },
   datepickContainer : { 
-    flex:2,
+    height:'10%',
     flexDirection : 'row', 
     alignItems: "center", 
     justifyContent: "space-evenly" 
@@ -154,7 +132,8 @@ const styles = StyleSheet.create({
     fontWeight:'bold'
   },
   listContainer : {
-    flex : 13,
+    height:'70%',
+    paddingHorizontal:10
   },
   tableHead :{
     fontSize:12,

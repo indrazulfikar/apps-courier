@@ -115,7 +115,19 @@ export default function scanMenu() {
         }).then(function (response) {
             // berhasil
             // setLoading(false);
-            alert('Success update '+awb+' '+menuButton.find(x => x.code === choice).name)
+            Alert.alert(
+              'Sukses',
+              'Awb berhasil di '+menuButton.find(x => x.code === choice).name,
+              [
+                {
+                  text: 'Ok',
+                  style: 'cancel',
+                }
+              ],
+              {
+                cancelable: true,
+              },
+            );
           }).catch(function (error) {
             // masuk ke server tapi return error (unautorized dll)
             if (error.response) {
@@ -129,8 +141,8 @@ export default function scanMenu() {
               if(error.response.data.message == 'data not found')
               {
                 Alert.alert(
-                  'Gagal Update',
-                  'awb '+awb+' '+error.response.data.message,
+                  'AWB Tidak Dikenal',
+                  'AWB Tidak Ada Di Joblist Anda',
                   [
                     {
                       text: 'Ok',
