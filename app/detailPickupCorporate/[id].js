@@ -24,7 +24,7 @@ export default function detailListPickup() {
     await SecureStore.getItemAsync('secured_token').then((token) => {
       axios({
         method: "get",
-        url: HostUri+`pickup/seller/${id}`,
+        url: HostUri+`pickup/corporate/${id}`,
         headers: {
           "Content-Type": 'application/json',
           "Authorization" : `Bearer ${token}`,

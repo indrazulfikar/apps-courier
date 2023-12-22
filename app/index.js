@@ -1,8 +1,8 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { router } from "expo-router";
-import { Divider } from '@rneui/themed';
-import { StyleSheet, Text, View, Image, TextInput, Button, TouchableOpacity} from "react-native";
+import { Divider, Dialog } from '@rneui/themed';
+import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity} from "react-native";
 import { HostUri } from "./_components/HostUri";
 import * as SecureStore from 'expo-secure-store';
 import axios from "axios";
@@ -11,8 +11,7 @@ export default function index() {
 
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [token, setToken] = useState("");
-  const [loading, setLoading] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function getValueFor(key) {
@@ -30,7 +29,7 @@ export default function index() {
   }
   
   const loginHandler = async () => {
-    // console.log('masuk')
+    setLoading(true);
     await axios.post(
       HostUri+'login',
       { telp: phone, password: password,},
@@ -44,24 +43,32 @@ export default function index() {
         // console.log(response);
         save('secured_token', response.data.data.token);
         save('secured_name', response.data.data.name);
+        setLoading(false);
         router.replace('/home');
       }).catch(function (error) {
         // masuk ke server tapi return error (unautorized dll)
         if (error.response) {
           //gagal login
+          setLoading(false);
           if(error.response.data.message == 'Unauthorized')
           {
             alert('telp / password salah !')
+          }else{
+            alert(error.response.data.message)
+
           }
           // console.error(error.response.data);
           // console.error(error.response.status);
           // console.error(error.response.headers);
         } else if (error.request) {
           // ga konek ke server
+          setLoading(false);
           alert('Check Koneksi anda !')
           console.error(error.request);
         } else {
+          setLoading(false);
           // error yang ga di sangka2
+          alert('Fatal error 404')
           console.error("Error", error.message);
         }
     });
@@ -70,6 +77,9 @@ export default function index() {
   return (
 
     <View style={styles.container}>
+    <Dialog isVisible={loading} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
+      <Dialog.Loading />
+    </Dialog>
     <Image style={styles.imageLogo} source={require("../assets/icondepan.png")} />
     <Image style={styles.image} source={require("../assets/logo-login.png")} />
       <StatusBar style="auto" />

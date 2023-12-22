@@ -14,7 +14,6 @@ const Header = (props) => {
   const [name, setName] = useState('Loading ...');
   const [token, setToken] = useState('');
   const [popupLogout, setPopupLogout] = useState(false);
-  const getToken = props.getToken ? props.getToken : function(text){} ;
 
   useEffect(() => {
     async function getValueFor(key) {
@@ -26,7 +25,6 @@ const Header = (props) => {
             setName(result);
           }
           if(key == 'secured_token'){
-            getToken(result);
             setToken(result);
           }
         }
@@ -116,7 +114,7 @@ heading: {
   fontSize: 15,
 //   fontWeight: 'bold',
   paddingTop:5,
-  paddingBottom:5,
+  // paddingBottom:5,
 },
 subheaderText: {
   color: 'white',

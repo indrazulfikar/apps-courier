@@ -1,10 +1,8 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, TextInput, Image } from 'react-native';
-import { router, Link } from "expo-router";
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, TextInput, Image, ScrollView, useWindowDimensions } from 'react-native';
+import { Link } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
-import { useState, useEffect } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import { useState} from 'react';
 
 //icons 
 import mobil from '../assets/mobil.png';
@@ -15,22 +13,18 @@ import boxgagal from '../assets/boxgagal.png';
 import dikirimkurir from '../assets/dikirimkurir.png';
 import scan from '../assets/scan.png';
 import sirine from '../assets/sirine.png';
+import pending from '../assets/pending.png';
 
 export default function home() {
 
-  const [token, setToken] = useState("");
-
-  const getToken = (secured_token) => {
-    setToken(secured_token);
-  }
+  const windowHeight = useWindowDimensions().height
 
   return (
-    <SafeAreaView style={styles.container}>
-
+    <SafeAreaView style={[styles.container, { minHeight: Math.round(windowHeight) }] }>
+    
       <View style={styles.headerContainer}>
-        <Header getToken={getToken}/>
+        <Header />
       </View>
-
       <View style={styles.searchContainer }>
         <TextInput
           style={styles.input}
@@ -40,7 +34,7 @@ export default function home() {
         />
       </View>
 
-      <View style={styles.contentBackground }>
+      <ScrollView style={styles.contentBackground }>
 
         <View style={styles.contentList}>
           <Link href="/listPickup" asChild>
@@ -85,6 +79,12 @@ export default function home() {
         </View>
 
         <View style={styles.contentList}>
+          <Link href="/pending" asChild>
+            <TouchableOpacity style={styles.contentItem}>
+              <Image source={pending} />
+              <Text style={styles.contentText}>Paket Pending</Text>
+            </TouchableOpacity>
+          </Link>
           <Link href="/scanMenu" asChild>
             <TouchableOpacity style={styles.contentItem}>
               <Image source={scan} />
@@ -97,10 +97,9 @@ export default function home() {
           </TouchableOpacity>
         </View>
 
-      </View>
+      </ScrollView>
 
-      <View style={{ flex:4 }}></View>
-    <Footer  />
+    <Footer />
     </SafeAreaView>
   );
 }
@@ -112,17 +111,16 @@ const styles = StyleSheet.create({
     flexDirection:'column',
   },
   headerContainer : {
-    flex:2,
+    height:'10%',
   },
   searchContainer : {
     backgroundColor:'#FAF8ED',
     borderRadius:10,
-    margin : 10,
-    flex:2,
+    marginHorizontal : 10,
+    height:'10%',
     justifyContent:'space-around'
   },
   input: {
-    height: 50,
     margin: 12,
     borderWidth: 1,
     padding: 10,
@@ -130,9 +128,9 @@ const styles = StyleSheet.create({
     borderRadius:5
   },
   contentBackground : {
-    flex:8,
+    height:'70%',
     padding:10, 
-    margin:10,
+    margin:15,
     borderRadius:20,
     backgroundColor:'#FAF8ED', 
   },
