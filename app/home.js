@@ -79,7 +79,7 @@ export default function home() {
         </View>
 
         <View style={styles.contentList}>
-          <Link href="/pending" asChild>
+          <Link href="/listDeliveryPending" asChild>
             <TouchableOpacity style={styles.contentItem}>
               <Image source={pending} />
               <Text style={styles.contentText}>Paket Pending</Text>

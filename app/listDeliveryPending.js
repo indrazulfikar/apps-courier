@@ -5,14 +5,17 @@ import Footer from './_components/Footer';
 import CustomDatePick from './_components/CustomDatePick';
 import { useState, useEffect } from 'react';
 import { HostUri } from './_components/HostUri';
-import AccordionDelivery from './_components/AccordionDelivery'
+import AccordionPending from './_components/AccordionPending'
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 
-export default function listDeliveryFail() {
+export default function listDeliveryPending() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [err, setErr] = useState('Disconnected Please Check your Connection !');
+
+  const choiceList = [9, 10, 13];
+  const reasonList = ['Tidak ada orang', 'Invalid Address', 'Ditolak Penerima', 'Alasan Lain'];
 
       useEffect(() => {
         getData();
@@ -22,7 +25,7 @@ export default function listDeliveryFail() {
         await SecureStore.getItemAsync('secured_token').then((token) => {
           axios({
             method: "get",
-            url: HostUri+'delivery/fail',
+            url: HostUri+'delivery/pending',
             headers: {
               "Content-Type": 'application/json',
               "Authorization" : `Bearer ${token}`,
@@ -60,17 +63,15 @@ export default function listDeliveryFail() {
       <SafeAreaView style={styles.container}>
 
         <View style={styles.headerContainer}>
-          <Header title='Delivery Gagal'/>
+          <Header title='Paket Pending'/>
         </View>
 
-        <View style={styles.datepickContainer}>
-          <View style={{ margin:10 }}>
-            <CustomDatePick />
-          </View>
-          <View>
-            <CustomDatePick />
-          </View>
+        <View style={styles.headerChild}>
+        <Text style={styles.tanggal}>{ new Date().toLocaleDateString('id-ID', {weekday: 'long',  month: 'long', day:'2-digit', year :'numeric' }) }</Text>
+        <View style={styles.dropdownContainer}>
+        <Text style={styles.totalText}>Total : {Object.keys(data).length} AWB</Text>
         </View>
+      </View>
 
         <Divider
           style={{margin: 5 }}
@@ -100,7 +101,7 @@ export default function listDeliveryFail() {
           }
             { !loading &&
               data.map((l, i) => (
-                <AccordionDelivery data={ l } key={l.shipping_awb}/>
+                <AccordionPending data={ l } key={l.shipping_awb} reasonList ={reasonList}/>
                 // <ListItem key={i} bottomDivider Component={View}>
                 //   <ListItem.Content>
                 //     <ListItem.Subtitle><Text style={styles.tableHead}>AWB</Text></ListItem.Subtitle>
@@ -159,7 +160,8 @@ const styles = StyleSheet.create({
     fontWeight:'bold'
   },
   listContainer : {
-    height:'74%'
+    height:'74%',
+    padding : 10
   },
   tableHead :{
     fontSize:12,

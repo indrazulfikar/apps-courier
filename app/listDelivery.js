@@ -118,11 +118,11 @@ export default function listPickup() {
                 data.map((l, i) => (
                   <ListItem key={i} bottomDivider Component={TouchableOpacity} >
                     <ListItem.Content>
-                      <ListItem.Title>{l.transaction_address_name}</ListItem.Title>
-                      <ListItem.Subtitle>{l.subdistrict_name}</ListItem.Subtitle>
+                    <ListItem.Title>{l.name} {l.total > 1 && "("+l.total+")"}</ListItem.Title>
+                    <ListItem.Subtitle>{l.subdistrict_name}</ListItem.Subtitle>
                     </ListItem.Content>
                     <ListItem.Content right>
-                      <ListItem.Subtitle ><Link href={"/detailDelivery/"+l.shipping_id} asChild><Text style={{ color:'blue' }}>Detail</Text></Link></ListItem.Subtitle>
+                      <ListItem.Subtitle ><Link href={"/detailDelivery/"+l.user_id} asChild><Text style={{ color:'blue' }}>Detail</Text></Link></ListItem.Subtitle>
                     </ListItem.Content>
                   </ListItem>
                 ))
