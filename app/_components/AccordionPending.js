@@ -145,7 +145,7 @@ const AccordionPending = (props) => {
                 </View>
                 <Dialog.Actions>
                 <Dialog.Button
-                  title={data.tracking_status_id == 10 && ("Call Attempt 01")}
+                  title={data.tracking_status_id == 10 && ("Call Attempt 01") || data.tracking_status_id == 11 && ("Call Attempt 02") || data.tracking_status_id == 12 && ("Call Attempt 03")}
                   onPress={() => {
                     updateHandler(data.shipping_id);
                   }}
