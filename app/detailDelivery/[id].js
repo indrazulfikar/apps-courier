@@ -18,22 +18,19 @@ export default function detailListDelivery() {
     const [err, setErr] = useState('')
     const [startCamera, setStartCamera] = useState(false);
     const [imageUri, setImageUri] = useState('');
-    // const [choice, setChoice] = useState('');
-    // const [reasonCheck, setReasonCheck] = useState('');
-    // const [reasonText, setReasonText] = useState('');
-    // const [awb, setAwb] = useState('');
-    // const [name, setName] = useState('');
-    const [formData, setFormData] = useState({
-      shipping_id: '',
-      selected_tracking: '',
-      alasan : '',
-      image : '',
+
+    const [returnData, setReturnData] = useState({
+      shipping_id : '',
+      selected_choice : '',
       name : '',
+      check : '',
+      reason : '',
     });
-
-    const choiceList = [9, 13];
-    const reasonList = ['Dangerous Goods', 'Invalid Address', 'Packing Rusak', 'Paket Belum Siap', 'Alasan Lain'];
-
+   
+    
+    const choiceList = [9, 10, 13];
+    const reasonList = ['Tidak ada orang', 'Invalid Address', 'Ditolak Penerima', 'Alasan Lain'];
+  
     useEffect(() => {
         getData();
     }, []);
@@ -76,13 +73,23 @@ export default function detailListDelivery() {
     });
     }
 
-    const onPressUpdate = (awb_return, choice_return = '', name_return = '', check_return = '', reason_return = '') => {
+    const onPressUpdate = (id_return, choice_return = '', name_return = '', check_return = '', reason_return = '') => {
+      // console.log(id_return);
+      // console.log(choice_return);
+      // console.log(name_return);
+      // console.log(check_return);
+      // console.log(reason_return);
       if(choice_return == 1){
-
-      }
-      if(choice_return == 2)
-      {
-        updateShipping(awb_return, choice_return, name_return, check_return, reason_return);
+        setReturnData({
+          shipping_id : id_return,
+          selected_choice : choice_return,
+          name : name_return,
+          check : check_return,
+          reason : reason_return,
+        });
+        setStartCamera(true);
+      }else{
+        updateShipping(id_return, choice_return, name_return, check_return, reason_return);
       }
     }
 
@@ -90,56 +97,58 @@ export default function detailListDelivery() {
     {
       setImageUri(uri);
       setStartCamera(false);
-      updateShipping();
+      updateShipping(returnData.shipping_id, returnData.selected_choice, returnData.name, returnData.check, returnData.reason, uri);
+      // console.log(returnData);
     }
-    const updateShipping = async (awb, selected_choice, name, check, reason) =>{
-      console.log('masuk');
-      // choice
-      //   {key:'9', value:'finish'},
-      //   {key:'13', value:'failed'},
-
-        // ALL REQUEST shipping_id, selected_tracking, alasan, image, name
-        await SecureStore.getItemAsync('secured_token').then((token) => {
-        axios({
-          method: "post",
-          url: HostUri+'delivery/update',
-          headers: {
-            "Content-Type": 'application/json',
-            "Authorization" : `Bearer ${token}`,
-          },
-          data :{
-            shipping_id: id,
-            selected_tracking: choiceList[(selected_choice-1)],
-            alasan : (check == 5) ? reason : reasonList[(check-1)],
-            image : '',
-            name : name,
+    const updateShipping = async (shipping_id, selected_choice, name, check, reason, img='') =>{
+     // choice
+      //   {key:'1', value:'Pickup Sukses'},
+      //   {key:'2', value:'Pickup Gagal'},
+      // ALL REQUEST shipping_id, selected_tracking, alasan
+      let true_reason = (check == 4) ? reason : reasonList[check-1];
+      let filename = img.split('/').pop();
+      let match = /\.(\w+)$/.exec(filename);
+      let type = match ? `image/${match[1]}` : `image`;
+      await SecureStore.getItemAsync('secured_token').then((token) => {
+        let optHeader = (img == '') ? { "Content-Type": 'application/json', "Authorization" : `Bearer ${token}`} : {"Content-Type": 'multipart/form-data', "Authorization" : `Bearer ${token}`};
+      axios({
+        method: "post",
+        url: HostUri+'delivery/update',
+        headers: optHeader,
+        data : {
+          shipping_id: shipping_id,
+          selected_tracking: choiceList[(selected_choice-1)],
+          alasan : true_reason,
+          img : { uri: img, name: filename, type:type }
         }
-        }).then(function (response) {
-            // berhasil
-            router.back();
-          }).catch(function (error) {
-            // masuk ke server tapi return error (unautorized dll)
-            if (error.response) {
-              //gagal login
-              if(error.response.data.message == 'Unauthorized')
-              {
-                SecureStore.deleteItemAsync('secured_token');
-                SecureStore.deleteItemAsync('secured_name');
-                router.replace('/');
-              }
-              // console.error(error.response.data);
-              // console.error(error.response.status);
-              // console.error(error.response.headers);
-            } else if (error.request) {
-              // ga konek ke server
-              alert('Check Koneksi anda !')
-              console.error(error.request);
-            } else {
-              // error yang ga di sangka2
-              console.error("Error", error.message);
+      }).then(function (response) {
+          // berhasil
+          // router.back();
+          console.log('masuk sini');
+          getData();
+        }).catch(function (error) {
+          // masuk ke server tapi return error (unautorized dll)
+          if (error.response) {
+            //gagal login
+            if(error.response.data.message == 'Unauthorized')
+            {
+              SecureStore.deleteItemAsync('secured_token');
+              SecureStore.deleteItemAsync('secured_name');
+              router.replace('/');
             }
-        });
-    });  
+            console.error(error.response.data);
+            console.error(error.response.status);
+            console.error(error.response.headers);
+          } else if (error.request) {
+            // ga konek ke server
+            alert('Check Koneksi anda !')
+            console.error(error.request);
+          } else {
+            // error yang ga di sangka2
+            console.error("Error", error.message);
+          }
+      });
+  });
     }
 
     return (
@@ -189,7 +198,7 @@ export default function detailListDelivery() {
               }
               {
                 bigdata.map((l, i) => (
-                    <AccordionDelivery data={ l } onPressUpdate ={onPressUpdate} reasonList = {reasonList} key={l.shipping_awb} />
+                    <AccordionDelivery data={ l } key={l.shipping_awb} onPressUpdate ={onPressUpdate} reasonList ={reasonList}  />
                 ))
               }
             </ScrollView>

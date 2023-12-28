@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-nativ
 import { ListItem, Dialog, CheckBox } from '@rneui/themed';
 import {SelectList} from 'react-native-dropdown-select-list';
 
-const AccordionDelivery = (props) => {
+const AccordionPending = (props) => {
     const [expanded, setExpanded] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [checked, setChecked] = useState(1);
@@ -45,7 +45,15 @@ const AccordionDelivery = (props) => {
         <ListItem.Accordion
         content={
           <ListItem.Content>
-            <ListItem.Title><Text style={{ color:'white' }}>{data.shipping_awb} {data.shipping_cod != 'no' && (<Text>COD</Text>)}</Text></ListItem.Title>
+            <ListItem.Title>
+              <Text style={{ color:'white' }}>
+                {data.shipping_awb} 
+                {data.shipping_cod != 'no' && (<Text>COD</Text>)} 
+                {data.tracking_status_id == 10 && (<Text>- Call 01</Text>)}
+                {data.tracking_status_id == 11 && (<Text>- Call 02</Text>)}
+                {data.tracking_status_id == 12 && (<Text>- Call 03</Text>)}
+              </Text>
+            </ListItem.Title>
           </ListItem.Content>
         }
         isExpanded={expanded}
@@ -67,7 +75,7 @@ const AccordionDelivery = (props) => {
                     {data.shipping_product_weight && <Text>Berat {data.shipping_product_weight} gram</Text>}
                     {data.service && <Text>Service {data.service}</Text>}
                     {data.shipping_cod != 'no' && <Text>{data.shipping_total_cost}</Text>}
-                    {data.tracking_status_id == '13' && <Text>Delivery gagal alasan : {data.reason.shipping_history_desc.split(".")[1]}</Text>}
+                    {[10, 11, 12].includes(data.tracking_status_id)  && <Text>Delivery Pending | alasan : {data.reason.shipping_history_desc.split(".")[1]}</Text>}
                     {data.tracking_status_id == '9' && <Text>Status Delivery Sukses</Text>}
                 </View>
                 <View>
@@ -137,7 +145,7 @@ const AccordionDelivery = (props) => {
                 </View>
                 <Dialog.Actions>
                 <Dialog.Button
-                  title="UPDATE"
+                  title={data.tracking_status_id == 10 && ("Call Attempt 01") || data.tracking_status_id == 11 && ("Call Attempt 02") || data.tracking_status_id == 12 && ("Call Attempt 03")}
                   onPress={() => {
                     updateHandler(data.shipping_id);
                   }}
@@ -223,4 +231,4 @@ const styles = StyleSheet.create({
     }
 });
     
-export default AccordionDelivery;
+export default AccordionPending;

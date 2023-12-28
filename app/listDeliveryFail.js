@@ -1,11 +1,11 @@
 import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView} from 'react-native';
 import { ListItem, Divider, Skeleton } from '@rneui/themed';
-import { Link } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
 import CustomDatePick from './_components/CustomDatePick';
 import { useState, useEffect } from 'react';
 import { HostUri } from './_components/HostUri';
+import AccordionDelivery from './_components/AccordionDelivery'
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 
@@ -60,13 +60,7 @@ export default function listDeliveryFail() {
       <SafeAreaView style={styles.container}>
 
         <View style={styles.headerContainer}>
-          <Header title='List Delivery Gagal'/>
-        </View>
-
-        <View style={styles.headerChild}>
-          <Text style={styles.tanggal}>{ new Date().toLocaleDateString('id-ID', {weekday: 'long',  month: 'long', day:'2-digit', year :'numeric' }) }</Text>
-          <View style={styles.dropdownContainer}>
-          </View>
+          <Header title='Delivery Gagal'/>
         </View>
 
         <View style={styles.datepickContainer}>
@@ -78,10 +72,6 @@ export default function listDeliveryFail() {
           </View>
         </View>
 
-        <View style={styles.totalContainer}>
-          <Text style={styles.totalText}>Total 32 AWB</Text>
-        </View>
-
         <Divider
           style={{margin: 5 }}
           color="red"
@@ -89,8 +79,7 @@ export default function listDeliveryFail() {
           orientation="horizontal"
         />
 
-        <View style={styles.listContainer}>
-          <ScrollView>
+        <ScrollView style={styles.listContainer}>
           {
             loading &&
             <View style={{ flex:1, flexDirection:'column', padding:10 }}>
@@ -111,23 +100,23 @@ export default function listDeliveryFail() {
           }
             { !loading &&
               data.map((l, i) => (
-                <ListItem key={i} bottomDivider Component={View}>
-                  <ListItem.Content>
-                    <ListItem.Subtitle><Text style={styles.tableHead}>AWB</Text></ListItem.Subtitle>
-                    <ListItem.Title><Text style={{ fontWeight:'bold' }}>{l.shipping_awb}</Text></ListItem.Title>
-                    <ListItem.Subtitle><Text style={styles.tableHead}>Alasan</Text></ListItem.Subtitle>
-                    <ListItem.Title>{l.reason}</ListItem.Title>
-                  </ListItem.Content>
-                  <ListItem.Content right>
-                    <ListItem.Subtitle><Text style={styles.tableHead}>Status</Text></ListItem.Subtitle>
-                    <ListItem.Title><Text style={{ color:'red' }}>{l.shipping_status}</Text></ListItem.Title>
-                    <ListItem.Subtitle ><TouchableOpacity><Text style={{ color:'blue' }}>Update</Text></TouchableOpacity></ListItem.Subtitle>
-                  </ListItem.Content>
-                </ListItem>
+                <AccordionDelivery data={ l } key={l.shipping_awb}/>
+                // <ListItem key={i} bottomDivider Component={View}>
+                //   <ListItem.Content>
+                //     <ListItem.Subtitle><Text style={styles.tableHead}>AWB</Text></ListItem.Subtitle>
+                //     <ListItem.Title><Text style={{ fontWeight:'bold' }}>{l.shipping_awb}</Text></ListItem.Title>
+                //     <ListItem.Subtitle><Text style={styles.tableHead}>Alasan</Text></ListItem.Subtitle>
+                //     <ListItem.Title>{l.reason}</ListItem.Title>
+                //   </ListItem.Content>
+                //   <ListItem.Content right>
+                //     <ListItem.Subtitle><Text style={styles.tableHead}>Status</Text></ListItem.Subtitle>
+                //     <ListItem.Title><Text style={{ color:'red' }}>{l.shipping_status}</Text></ListItem.Title>
+                //     <ListItem.Subtitle ><TouchableOpacity><Text style={{ color:'blue' }}>Update</Text></TouchableOpacity></ListItem.Subtitle>
+                //   </ListItem.Content>
+                // </ListItem>
               ))
             }
           </ScrollView>
-        </View>
 
         <Footer  />
       </SafeAreaView>
@@ -141,7 +130,7 @@ const styles = StyleSheet.create({
     flexDirection:'column',
   },
   headerContainer : {
-    flex:2,
+    height:'8%'
   },
   headerChild : {
     flex: 1,
@@ -156,7 +145,7 @@ const styles = StyleSheet.create({
     flex:1
   },
   datepickContainer : { 
-    flex:2,
+    height:'8%',
     flexDirection : 'row', 
     alignItems: "center", 
     justifyContent: "space-evenly" 
@@ -170,7 +159,7 @@ const styles = StyleSheet.create({
     fontWeight:'bold'
   },
   listContainer : {
-    flex : 13,
+    height:'74%'
   },
   tableHead :{
     fontSize:12,
