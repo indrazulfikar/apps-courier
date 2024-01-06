@@ -41,8 +41,9 @@ export default function listPickup() {
         }).catch(function (error) {
           // masuk ke server tapi return error (unautorized dll)
           if (error.response) {
-            //gagal login
-            if(error.response.data.message == 'Unauthorized')
+          setLoading(false);
+          //gagal login
+          if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
             {
               SecureStore.deleteItemAsync('secured_token');
               SecureStore.deleteItemAsync('secured_name');
@@ -52,10 +53,12 @@ export default function listPickup() {
             // console.error(error.response.status);
             // console.error(error.response.headers);
           } else if (error.request) {
-            // ga konek ke server
+          setLoading(false);
+          // ga konek ke server
             alert('Check Koneksi anda !')
             console.error(error.request);
           } else {
+          setLoading(false);
             // error yang ga di sangka2
             console.error("Error", error.message);
           }
@@ -113,6 +116,10 @@ export default function listPickup() {
                 }
               </View>
               
+            }
+            {
+              data.length == 0 && !loading &&
+              <Text>No Data Found</Text>
             }
               { !loading &&
                 data.map((l, i) => (

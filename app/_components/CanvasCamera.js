@@ -41,8 +41,8 @@ const CanvasCamera = (props) => {
         const fileName = capturedImage.uri.replace(/^.*[\\\/]/, '');
         // let imageFullPathInLocalStorage = FileSystem.documentDirectory+fileName;
         // let res = await MediaLibrary.saveToLibraryAsync(capturedImage.uri);
-        console.log(capturedImage.uri);
-        returnImage(capturedImage.uri);
+        // console.log(capturedImage.uri);
+        returnImage(capturedImage);
     }
 
     const __retakePicture = () => {

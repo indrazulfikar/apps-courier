@@ -3,7 +3,7 @@ import Header from '../_components/Header';
 import Footer from '../_components/Footer';
 import { useState, useEffect } from 'react';
 import AccordionPickUp from '../_components/AccordionPickUp';
-import { Divider, Skeleton } from '@rneui/themed';
+import { Divider, Skeleton, Dialog } from '@rneui/themed';
 import { useLocalSearchParams, router } from 'expo-router';
 import { HostUri } from '../_components/HostUri';
 import * as SecureStore from 'expo-secure-store';
@@ -14,6 +14,7 @@ export default function detailListPickup() {
     const { id } = useLocalSearchParams();
     const [bigdata, setBigData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadingHttp, setLoadingHttp] = useState(false);
     const [err, setErr] = useState('')
     
     useEffect(() => {
@@ -37,7 +38,7 @@ export default function detailListPickup() {
           // masuk ke server tapi return error (unautorized dll)
           if (error.response) {
             //gagal login
-            if(error.response.data.message == 'Unauthorized')
+            if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
             {
               SecureStore.deleteItemAsync('secured_token');
               SecureStore.deleteItemAsync('secured_name');
@@ -48,9 +49,11 @@ export default function detailListPickup() {
             // console.error(error.response.headers);
           } else if (error.request) {
             // ga konek ke server
+            setLoading(false);
             alert('Check Koneksi anda !')
             console.error(error.request);
           } else {
+            setLoading(false);
             // error yang ga di sangka2
             console.error("Error", error.message);
           }
@@ -63,6 +66,8 @@ export default function detailListPickup() {
         //   {key:'2', value:'Pickup Gagal'},
         let choice = [4, 3];
         // ALL REQUEST shipping_id, selected_tracking, alasan
+        setLoadingHttp(true);
+        
         await SecureStore.getItemAsync('secured_token').then((token) => {
         axios({
           method: "post",
@@ -79,12 +84,16 @@ export default function detailListPickup() {
         }).then(function (response) {
             // berhasil
             // router.back();
+            setLoadingHttp(false);
+            setLoading(true);
             getData();
+            setLoading(false);
           }).catch(function (error) {
             // masuk ke server tapi return error (unautorized dll)
+            setLoadingHttp(false);
             if (error.response) {
               //gagal login
-              if(error.response.data.message == 'Unauthorized')
+              if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
               {
                 SecureStore.deleteItemAsync('secured_token');
                 SecureStore.deleteItemAsync('secured_name');
@@ -95,10 +104,12 @@ export default function detailListPickup() {
               // console.error(error.response.headers);
             } else if (error.request) {
               // ga konek ke server
+              setLoadingHttp(false);
               alert('Check Koneksi anda !')
               console.error(error.request);
             } else {
               // error yang ga di sangka2
+              setLoadingHttp(false);
               console.error("Error", error.message);
             }
         });
@@ -146,6 +157,16 @@ export default function detailListPickup() {
                   }
                 </View>
                 
+              }
+              {
+                bigdata.length == 0 && !loading &&
+                <Text>No Data Found</Text>
+              }
+              {
+                loadingHttp && 
+                <Dialog isVisible={loadingHttp} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
+                  <Dialog.Loading />
+                </Dialog>
               }
               {
                 bigdata.map((l, i) => (

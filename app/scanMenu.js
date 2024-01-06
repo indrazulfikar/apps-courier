@@ -3,7 +3,7 @@ import Header from './_components/Header';
 import Footer from './_components/Footer';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { useEffect, useState } from 'react';
-import { Icon } from '@rneui/themed';
+import { Icon, Dialog } from '@rneui/themed';
 import { HostUri } from './_components/HostUri';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
@@ -30,6 +30,7 @@ export default function scanMenu() {
     const [openScanner, setOpenScanner] = useState(false);
     const [awb, setAwb] = useState(null);
     const [alasan, setAlasan] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const menuButton = [
       { name : 'Gagal PickUp', code: '3', img : scangagalpickup},
@@ -94,11 +95,12 @@ export default function scanMenu() {
         return <Text>Requesting for camera permission</Text>;
     }
     if (hasPermission === false) {
-        return <Text>No access to camera</Text>;
+        return <Text>No access to camera, please give access to camera !</Text>;
     }
 
     const updateAwb = async(awb, code, alasan = '')=>
     {
+      setLoading(true);
       await SecureStore.getItemAsync('secured_token').then((token) => {
         axios({
           method: "post",
@@ -114,7 +116,7 @@ export default function scanMenu() {
           }
         }).then(function (response) {
             // berhasil
-            // setLoading(false);
+            setLoading(false);
             Alert.alert(
               'Sukses',
               'Awb berhasil di '+menuButton.find(x => x.code === choice).name,
@@ -132,7 +134,8 @@ export default function scanMenu() {
             // masuk ke server tapi return error (unautorized dll)
             if (error.response) {
               //gagal login
-              if(error.response.data.message == 'Unauthorized')
+              setLoading(false);
+              if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
               {
                 SecureStore.deleteItemAsync('secured_token');
                 SecureStore.deleteItemAsync('secured_name');
@@ -159,9 +162,11 @@ export default function scanMenu() {
               // console.error(error.response.headers);
             } else if (error.request) {
               // ga konek ke server
+              setLoading(false);
               alert('Check Koneksi anda !')
               console.error(error.request);
             } else {
+              setLoading(false);
               // error yang ga di sangka2
               console.error("Error", error.message);
             }
@@ -172,6 +177,12 @@ export default function scanMenu() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {
+        loading && 
+        <Dialog isVisible={loading} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
+          <Dialog.Loading />
+        </Dialog>
+      }
         {
             openScanner &&
             <BarCodeScanner
