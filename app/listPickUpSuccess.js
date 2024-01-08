@@ -36,9 +36,8 @@ export default function listPickUpSuccess() {
         return response.json();
       })
       .then( (result) => {
-        console.log(result.data);
-        setData(result.data);
         setLoading(false);
+        setData(result.data);
       })
       .catch(error => {
         setLoading(false);
@@ -46,14 +45,7 @@ export default function listPickUpSuccess() {
       })
     });
   }
-
-    const dummy = [
-        {
-          awb: 'KD0923000000001',
-          weight: '1200',
-          status: 'Req Pickup',
-        }
-      ]
+  
     return(
         <SafeAreaView style={styles.container}>
 

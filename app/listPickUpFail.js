@@ -1,5 +1,5 @@
 import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView} from 'react-native';
-import { ListItem, Divider } from '@rneui/themed';
+import { ListItem, Divider, Skeleton } from '@rneui/themed';
 import { router, Link } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
@@ -33,14 +33,14 @@ export default function listPickUpFail() {
         },
       }).then(function (response) {
           // berhasil
-          console.log(response.data.data)
           setLoading(false);
           setData(response.data.data);
         }).catch(function (error) {
           // masuk ke server tapi return error (unautorized dll)
           if (error.response) {
-            //gagal login
-            if(error.response.data.message == 'Unauthorized')
+          setLoading(false);
+          //gagal login
+          if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
             {
               SecureStore.deleteItemAsync('secured_token');
               SecureStore.deleteItemAsync('secured_name');
@@ -50,11 +50,13 @@ export default function listPickUpFail() {
             // console.error(error.response.status);
             // console.error(error.response.headers);
           } else if (error.request) {
-            // ga konek ke server
+          setLoading(false);
+          // ga konek ke server
             alert('Check Koneksi anda !')
             console.error(error.request);
           } else {
-            // error yang ga di sangka2
+          setLoading(false);
+          // error yang ga di sangka2
             console.error("Error", error.message);
           }
       });
@@ -85,11 +87,33 @@ export default function listPickUpFail() {
           orientation="horizontal"
         />
           <ScrollView style={styles.listContainer}>
-            {
-              data.map((l, i) => (
-                <AccordionPickUp data={ l } key={i} />
-              ))
-            }
+          {
+            loading &&
+            <View style={{ flex:1, flexDirection:'column', padding:10 }}>
+              {
+                [{},{},{},{},{},{},].map((l, i) => (
+                  <Skeleton
+                  // LinearGradientComponent={LinearGradient}
+                  animation="pulse"
+                  width={'100%'}
+                  height={60}
+                  style={{ marginBottom:5 }}
+                  key={i}
+                />
+                  ))
+              }
+            </View>
+            
+          }
+          {
+            data.length == 0 && !loading &&
+            <Text>No Data Found</Text>
+          }
+          { !loading &&
+            data.map((l, i) => (
+              <AccordionPickUp data={ l } key={i} />
+            ))
+          }
           </ScrollView>
         <Footer  />
       </SafeAreaView>

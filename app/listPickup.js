@@ -1,6 +1,6 @@
 import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView} from 'react-native';
 import { ListItem, Divider, Skeleton } from '@rneui/themed';
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
 import {SelectList} from 'react-native-dropdown-select-list';
@@ -40,13 +40,15 @@ export default function listPickup() {
         },
       }).then(function (response) {
           // berhasil
+          //console.log(response.data);
           setLoadingCorporate(false);
           setDataCorporate(response.data.data);
         }).catch(function (error) {
+          setLoadingCorporate(false);
           // masuk ke server tapi return error (unautorized dll)
           if (error.response) {
             //gagal login
-            if(error.response.data.message == 'Unauthorized')
+            if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
             {
               SecureStore.deleteItemAsync('secured_token');
               SecureStore.deleteItemAsync('secured_name');
@@ -57,9 +59,11 @@ export default function listPickup() {
             // console.error(error.response.headers);
           } else if (error.request) {
             // ga konek ke server
+            setLoadingCorporate(false);
             alert('Check Koneksi anda !')
             console.error(error.request);
           } else {
+            setLoadingCorporate(false);
             // error yang ga di sangka2
             console.error("Error", error.message);
           }
@@ -83,9 +87,10 @@ export default function listPickup() {
           setData(response.data.data);
         }).catch(function (error) {
           // masuk ke server tapi return error (unautorized dll)
+          setLoading(false);
           if (error.response) {
             //gagal login
-            if(error.response.data.message == 'Unauthorized')
+            if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
             {
               SecureStore.deleteItemAsync('secured_token');
               SecureStore.deleteItemAsync('secured_name');
@@ -96,10 +101,12 @@ export default function listPickup() {
             // console.error(error.response.headers);
           } else if (error.request) {
             // ga konek ke server
+            setLoading(false);
             alert('Check Koneksi anda !')
             console.error(error.request);
           } else {
             // error yang ga di sangka2
+            setLoading(false);
             console.error("Error", error.message);
           }
       });
@@ -156,6 +163,10 @@ export default function listPickup() {
               </View>
               
             }
+            {
+              data.length == 0 && !loading &&
+              <Text>No Data Found</Text>
+            }
               {
                 data.map((l, i) => (
                   <ListItem key={i} bottomDivider Component={TouchableOpacity} >
@@ -195,13 +206,20 @@ export default function listPickup() {
               </View>
               
             }
+            {
+              dataCorporate.length == 0 && !loadingCorporate &&
+              <Text>No Data Found</Text>
+            }
               {
                 dataCorporate.map((l, i) => (
                   <ListItem key={i} bottomDivider Component={TouchableOpacity} >
                     <ListItem.Content>
                       <ListItem.Title>{l.company_name} {l.total > 1 && "("+l.total+")"}</ListItem.Title>
-                      <ListItem.Subtitle>{l.subdistrict_name}</ListItem.Subtitle>
                     </ListItem.Content>
+                    <ListItem.Content>
+                    <ListItem.Subtitle>{l.kelurahan}</ListItem.Subtitle>
+                  </ListItem.Content>
+
                     <ListItem.Content right>
                       <ListItem.Subtitle ><Link href={"/detailPickupCorporate/"+l.user_id} asChild><Text style={{ color:'blue' }}>Detail</Text></Link></ListItem.Subtitle>
                     </ListItem.Content>

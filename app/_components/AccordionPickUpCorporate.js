@@ -9,15 +9,13 @@ const AccordionPickUpCorporate = (props) => {
     const [checked, setChecked] = useState(1);
     const [selected, setSelected] = useState(1);
     const [reasonText, setReasonText] = useState('');
-    const [loading, setLoading] = useState(false);
+   
     const onPressUpdate = props.onPressUpdate;
+    const reasonList = props.reasonList;
     const choice = [
-      // {key:'1', value:'Seller', disabled:true},
       {key:'1', value:'Pickup Sukses'},
       {key:'2', value:'Pickup Gagal'},
     ];
-    const reason = ['Dangerous Goods', 'Invalid Address', 'Packing Rusak', 'Paket Belum Siap', 'Alasan Lain'];
-
 
     let data = props.data;
 
@@ -25,14 +23,8 @@ const AccordionPickUpCorporate = (props) => {
       setShowModal(!showModal);
     };
 
-    const updateToSuccessHandler = async(shipping_id, selected_choice) => {
-      let submitReason = '';
-      if(selected_choice == 2){
-        submitReason = (checked == 5) ? reasonText : reason[checked-1];
-      }
-      setLoading(true);
-      await onPressUpdate(shipping_id, selected_choice, submitReason);
-      setLoading(false);
+    const updateHandler = (order_corporate_id, name, count, weight) => {
+      onPressUpdate(order_corporate_id, selected, '', checked, reasonText, name, count, weight );
       setShowModal(!showModal);
       resetChoice();
     }
@@ -47,7 +39,7 @@ const AccordionPickUpCorporate = (props) => {
         <ListItem.Accordion
         content={
           <ListItem.Content>
-            <ListItem.Title><Text style={{ color:'white' }}>{data.order_corporate_trx_id}{ data.shipping_cod != 'no' && (<Text> - COD</Text>)}</Text></ListItem.Title>
+            <ListItem.Title><Text style={{ color:'white' }}>{data.order_corporate_trx_id}</Text></ListItem.Title>
           </ListItem.Content>
         }
         isExpanded={expanded}
@@ -61,18 +53,27 @@ const AccordionPickUpCorporate = (props) => {
           <ListItem.Content>
             <View style={{ flexDirection:'row' }}>
                 <View style={{ flex:1 }}>
-                    <Text>{data.transaction_address_detail}</Text>
-                    {data.kelurahan && <Text>Kel. {data.kelurahan}{data.city_name && <Text> Kota. {data.city_name}</Text>}</Text>}
-                    {data.province_name && <Text>Prov. {data.province_name} {data.zipcode && <Text>{data.zipcode} </Text>}</Text>}
+                    <Text>{data.company_name}</Text>
+                    <Text>{data.complete_address}</Text>
+                    {
+                      // data.kelurahan && <Text>Kel. {data.kelurahan}{data.city_name && <Text> Kota. {data.city_name}</Text>}</Text>
+                    }
+                    {
+                      // data.province_name && <Text>Prov. {data.province_name} {data.zipcode && <Text>{data.zipcode} </Text>}</Text>
+                    }
+                    {
+                      data.order_corporate_count && <Text>Jumlah Paket : {data.order_corporate_count}</Text>
+                    }
+                    {
+                      data.order_corporate_weight && <Text>Estimasi Berat : {data.order_corporate_weight} gram</Text>
+                    }
                     {data.telp && <Text>Telp. {data.telp}</Text>}
                     {data.shipping_product_weight && <Text>Berat : {data.shipping_product_weight} gram</Text>}
                     {data.shipping_status == 'pickedup' && <Text>Status : Pickup Success</Text>}
                     {data.shipping_status == 'miss route' && <Text>Status : {data.reason.shipping_history_desc}</Text>}
                  </View>
-                {( data.shipping_status != 'pickedup' && data.shipping_status != 'miss route')  && (<View><TouchableOpacity><Text onPress={toggleModal} style={{ color:'blue',  fontWeight:'bold' }}>Update</Text></TouchableOpacity></View>)}
-          <Dialog isVisible={loading} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
-            <Dialog.Loading />
-          </Dialog>
+                {( data.shipping_status != 'picked up' && data.shipping_status != 'miss route')  && (<View><TouchableOpacity><Text onPress={toggleModal} style={{ color:'blue',  fontWeight:'bold' }}>Update</Text></TouchableOpacity></View>)}
+                
            <Dialog
               isVisible={showModal}
               // onBackdropPress={toggleModal}
@@ -86,13 +87,16 @@ const AccordionPickUpCorporate = (props) => {
                 dropdownStyles={{ zIndex:999, minHeight:100, backgroundColor : 'white' }}
                 boxStyles={{ margin:10, borderColor:'red' }}
             />
+            {
+              selected == 1 && <Text style={{ backgroundColor:'red', color:'white', padding:2, alignSelf:'center' }}>Pastikan Jumlah Paket sudah sesuai</Text>
+            }
             { 
               selected == 1 
               && 
               <Dialog.Actions>
           <Dialog.Button
-            title="UPDATE"
-            onPress={() => {updateToSuccessHandler(data.shipping_id, selected);}}
+            title="Updata dan Ambil Foto"
+            onPress={() => {updateHandler(data.order_corporate_id, data.company_name, data.order_corporate_count, data.order_corporate_weight);}}
             titleStyle={{ color:'red' }}
           />
           <Dialog.Button title="CANCEL" onPress={()=>{resetChoice();toggleModal();}} titleStyle={{ color:'red' }}/>
@@ -101,7 +105,7 @@ const AccordionPickUpCorporate = (props) => {
             { 
               selected == 2 
               && 
-              reason.map((l, i) => (
+              reasonList.map((l, i) => (
                 <CheckBox
                   key={i}
                   title={l}
@@ -131,7 +135,7 @@ const AccordionPickUpCorporate = (props) => {
             //   console.log(`Option ${checked} was selected! and ${reasonText}`);
             //   toggleModal();
             // }}
-            onPress={() => {updateToSuccessHandler(data.shipping_id, selected);}}
+            onPress={() => {updateHandler(data.order_corporate_id);}}
             titleStyle={{ color:'red' }}
           />
           <Dialog.Button title="CANCEL" onPress={()=>{resetChoice();toggleModal();}} titleStyle={{ color:'red' }}/>

@@ -33,9 +33,10 @@ export default function listDeliveryFail() {
               setData(response.data.data);
             }).catch(function (error) {
               // masuk ke server tapi return error (unautorized dll)
+              setLoading(false);
               if (error.response) {
                 //gagal login
-                if(error.response.data.message == 'Unauthorized')
+                if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
                 {
                   SecureStore.deleteItemAsync('secured_token');
                   SecureStore.deleteItemAsync('secured_name');
@@ -46,9 +47,11 @@ export default function listDeliveryFail() {
                 // console.error(error.response.headers);
               } else if (error.request) {
                 // ga konek ke server
+                setLoading(false);
                 alert('Check Koneksi anda !')
                 console.error(error.request);
               } else {
+                setLoading(false);
                 // error yang ga di sangka2
                 console.error("Error", error.message);
               }
@@ -97,6 +100,10 @@ export default function listDeliveryFail() {
               }
             </View>
             
+          }
+          {
+            data.length == 0 && !loading &&
+            <Text>No Data Found</Text>
           }
             { !loading &&
               data.map((l, i) => (

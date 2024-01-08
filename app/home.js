@@ -96,9 +96,7 @@ export default function home() {
             <Text style={styles.contentText}>Emergency</Text>
           </TouchableOpacity>
         </View>
-
       </ScrollView>
-
     <Footer />
     </SafeAreaView>
   );

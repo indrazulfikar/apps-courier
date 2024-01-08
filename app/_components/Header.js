@@ -61,7 +61,7 @@ const Header = (props) => {
         // masuk ke server tapi return error (unautorized dll)
         if (error.response) {
           //gagal login
-          if(error.response.data.message == 'Unauthorized')
+          if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
           {
             SecureStore.deleteItemAsync('secured_token');
             SecureStore.deleteItemAsync('secured_name');

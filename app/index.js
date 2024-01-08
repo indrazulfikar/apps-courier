@@ -50,7 +50,7 @@ export default function index() {
         if (error.response) {
           //gagal login
           setLoading(false);
-          if(error.response.data.message == 'Unauthorized')
+          if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
           {
             alert('telp / password salah !')
           }else{
