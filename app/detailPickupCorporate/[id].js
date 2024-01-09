@@ -134,7 +134,7 @@ export default function detailListPickupCorporate() {
          const manipResult = await ImageManipulator.manipulateAsync(
            img,
            [],
-           { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
+           { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
          ); 
          let filename = manipResult.uri.split('/').pop();
          let match = /\.(\w+)$/.exec(filename);

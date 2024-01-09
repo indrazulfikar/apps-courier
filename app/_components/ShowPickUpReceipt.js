@@ -1,20 +1,38 @@
 import React, { useState } from 'react';
-import {View, StyleSheet, Text, TextInput, Button, TouchableOpacity, Image} from 'react-native';
+import {View, StyleSheet, Text, Image, TouchableOpacity} from 'react-native';
+import { HostImgCorporate } from './HostUri';
 
-const PickUpReceipt = (props) => {
+const ShowPickUpReceipt = (props) => {
 
     const sender = props.sender;
     const total = props.total;
     const weight = props.weight;
     const img = props.img;
-    const onCreate = props.onCreate;
-    const onBack = props.onBack;
+    const name = props.name;
+    const hp = props.hp;
+    const [zoom, setZoom] = useState(false);
+    const uriImage = HostImgCorporate+img;
 
-    const [name, setName] = useState('');
-    const [hp, setHp] = useState('');
+    const zoomHanlder = () => {
+        setZoom(!zoom);
+    }
 
     return(
         <View style={styles.container}>
+        { zoom &&
+            <TouchableOpacity style={styles.zoomImg} onPress={()=>{zoomHanlder()}}>
+            <Image
+            source={{uri: uriImage }}
+            style={{
+                height:400,
+                width:400,
+                resizeMode : 'contain',
+                alignSelf:'center',
+            }}
+            />
+            </TouchableOpacity>
+        }
+        { !zoom &&
             <View style={styles.box}>
                 <View style={{ flex:1, padding:20 }}>
                     <View style={{ flex:1 }}>
@@ -38,38 +56,33 @@ const PickUpReceipt = (props) => {
                         </View>
                     </View>
                     
-                    <View style={{ flex:2, alignItems:'center', marginVertical:10 }}>
+                    <TouchableOpacity style={{ flex:2, alignItems:'center', marginVertical:10 }} onPress={()=>{zoomHanlder()}}>
                         <Image
-                            source={img}
-                            style={{
-                                flex : 1,
-                                resizeMode : 'contain'
-                            }}
+                        source={{uri: uriImage }}
+                        style={{
+                            // flex : 1,
+                            height:'100%',
+                            width:'100%',
+                            resizeMode : 'contain'
+                        }}
                         />
-                    </View>
+                    </TouchableOpacity>
 
                     <View style={{ flex:2, flexDirection:'row' }}>
                         <View style={{ flex:3 }}>
                             <View>
                                 <Text>Diserahkan Oleh :</Text>
-                                <TextInput style={styles.inputMerah } onChangeText={(val)=>setName(val)}/>
+                                <Text>{name}</Text>
                             </View>
                             <View>
                                 <Text>No HP :</Text>
-                                <TextInput style={styles.inputMerah } onChangeText={(val)=>setHp(val)} keyboardType='numeric'/>
+                                <Text>{hp}</Text>
                             </View>
                         </View>
                     </View>
-                    <View style={{ flex:0.5, flexDirection:'row' }}>
-                        <TouchableOpacity style={styles.buttonMerah} onPress={()=>onCreate(name, hp)}>
-                            <Text style={{ flex:1, textAlign:'center', textAlignVertical:'center', fontWeight:'bold', color:'white'}}>Buat Tanda Terima</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.buttonMerah}  onPress={()=>onBack()}>
-                            <Text style={{ flex:1, textAlign:'center', textAlignVertical:'center', fontWeight:'bold', color:'white'}}>Kembali</Text>
-                        </TouchableOpacity>
-                    </View>
                 </View>
             </View>
+            }
         </View>
     )
 
@@ -77,7 +90,12 @@ const PickUpReceipt = (props) => {
 
 const styles = StyleSheet.create({
     container : {
-        flex : 1
+        // flex : 1,
+        height:'90%',
+        // verticalAlign:'middle',
+        // ver
+        // marginHorizontal:20,
+        marginVertical:0,
     },
     box : {
         flex:1,
@@ -86,6 +104,12 @@ const styles = StyleSheet.create({
         borderWidth:5,
         margin:10,
         shadowOpacity:1
+    },
+    zoomImg : {
+        flex:1,
+        margin:10,
+        alignSelf:'center',
+        verticalAlign:'middle'
     },
     inputMerah : {
         borderWidth : 1,
@@ -104,4 +128,4 @@ const styles = StyleSheet.create({
     }
 });
     
-export default PickUpReceipt;
+export default ShowPickUpReceipt;

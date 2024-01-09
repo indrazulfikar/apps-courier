@@ -113,7 +113,7 @@ export default function detailListDelivery() {
         const manipResult = await ImageManipulator.manipulateAsync(
           img,
           [],
-          { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
+          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
         ); 
         let filename = manipResult.uri.split('/').pop();
         let match = /\.(\w+)$/.exec(filename);
@@ -195,7 +195,7 @@ export default function detailListDelivery() {
             (
             <ScrollView>
             {
-              data.length == 0 && !loading &&
+              bigdata.length == 0 && !loading &&
               <Text>No Data Found</Text>
             }
             {

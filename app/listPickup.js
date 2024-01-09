@@ -137,6 +137,7 @@ export default function listPickup() {
 
           <View style={styles.totalContainer}><Text style={styles.totalText}>Total : {Object.keys(data).length} Seller | {Object.keys(dataCorporate).length} Corporate</Text></View>
           
+          <Text style={{marginHorizontal: 5, fontWeight:'bold' }}>Pickup Seller ({data.length})</Text>
           <Divider
             style={{marginHorizontal: 5 }}
             color="red"
@@ -165,7 +166,7 @@ export default function listPickup() {
             }
             {
               data.length == 0 && !loading &&
-              <Text>No Data Found</Text>
+              <Text style={{marginHorizontal: 5 }}>No Data Found</Text>
             }
               {
                 data.map((l, i) => (
@@ -181,6 +182,7 @@ export default function listPickup() {
                 ))
               }
             </ScrollView>
+            <Text style={{marginHorizontal: 5, fontWeight:'bold' }}>Pickup Corporate ({dataCorporate.length})</Text>
             <Divider
             style={{marginHorizontal: 5 }}
             color="red"

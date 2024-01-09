@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Linking } from 'react-native';
 import { ListItem, Dialog, CheckBox } from '@rneui/themed';
 import {SelectList} from 'react-native-dropdown-select-list';
 
@@ -86,7 +86,7 @@ const AccordionPending = (props) => {
             </View>
             <View style={styles.buttongroup}>
                 <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>WA Call</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>WA Chat</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }} onPress={()=>{Linking.openURL(`http://api.whatsapp.com/send?phone=${data.telp.replace(data.telp[0], '+62')}`)}}>WA Chat</Text></TouchableOpacity>
                 <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>Navigasi</Text></TouchableOpacity>
             </View>
           </ListItem.Content>

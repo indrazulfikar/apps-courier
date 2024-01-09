@@ -7,6 +7,7 @@ import { HostUri } from './_components/HostUri';
 import { useState, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import AccordionPickUp from './_components/AccordionPickUp';
+import AccordionPickUpCorporate from './_components/AccordionPickUpCorporate';
 
 export default function listPickUpSuccess() {
   const [startDate, setStartDate] = useState('');
@@ -15,8 +16,13 @@ export default function listPickUpSuccess() {
   const [data, setData] = useState([]);
   const [err, setErr] = useState('Disconnected Please Check your Connection !');
 
+  const [loadingCorporate, setLoadingCorporate] = useState(true);
+  const [dataCorporate, setDataCorporate] = useState([]);
+  const [errCorporate, setErrCorporate] = useState('Disconnected Please Check your Connection !');
+
   useEffect(() => {
     getData();
+    getCorporate();
   }, []);
 
   const getData = async () => {
@@ -45,6 +51,33 @@ export default function listPickUpSuccess() {
       })
     });
   }
+
+  const getCorporate = async () => {
+    await SecureStore.getItemAsync('secured_token').then((token) => {
+      fetch(HostUri+'pickup/corporate/success', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization' : 'Bearer '+token       
+        },
+      })
+      .then(response => {
+        if (!response.ok) {
+          setLoadingCorporate(false);
+          throw new Error('Disconnected please check connection');
+        }
+        return response.json();
+      })
+      .then( (result) => {
+        setLoadingCorporate(false);
+        setDataCorporate(result.data);
+      })
+      .catch(error => {
+        setLoadingCorporate(false);
+        console.error('Error:', error);
+      })
+    });
+  }
   
     return(
         <SafeAreaView style={styles.container}>
@@ -61,6 +94,7 @@ export default function listPickUpSuccess() {
               <CustomDatePick />
             </View>
           </View>
+          <Text style={{marginHorizontal: 5, fontWeight:'bold' }}>Seller ({data.length})</Text>
 
           <Divider
             style={{margin: 5 }}
@@ -92,6 +126,38 @@ export default function listPickUpSuccess() {
               {
                 data.map((l, i) => (
                   <AccordionPickUp data={ l } key={i} />
+                ))
+              }
+            </ScrollView>
+            <Text style={{marginHorizontal: 5, fontWeight:'bold' }}>Corporate ({dataCorporate.length})</Text>
+            <Divider
+              style={{marginHorizontal: 5 }}
+              color="red"
+              width={2}
+              orientation="horizontal"
+            />
+            <ScrollView>
+            {
+              loadingCorporate &&
+              <View style={{ flex:1, flexDirection:'column', padding:10 }}>
+                {
+                  [{},{},{},{},{},{},].map((l, i) => (
+                    <Skeleton
+                    // LinearGradientComponent={LinearGradient}
+                    animation="pulse"
+                    width={'100%'}
+                    height={60}
+                    style={{ marginBottom:5 }}
+                    key={i}
+                  />
+                    ))
+                }
+              </View>
+              
+            }
+              {
+                dataCorporate.map((l, i) => (
+                  <AccordionPickUpCorporate data={ l } key={i} />
                 ))
               }
             </ScrollView>

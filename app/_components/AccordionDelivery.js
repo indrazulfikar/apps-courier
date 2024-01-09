@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Linking } from 'react-native';
 import { ListItem, Dialog, CheckBox } from '@rneui/themed';
 import {SelectList} from 'react-native-dropdown-select-list';
 
@@ -66,7 +66,7 @@ const AccordionDelivery = (props) => {
                     {data.telp && <Text>Telp. {data.telp}</Text>}
                     {data.shipping_product_weight && <Text>Berat {data.shipping_product_weight} gram</Text>}
                     {data.service && <Text>Service {data.service}</Text>}
-                    {data.shipping_cod != 'no' && <Text>{data.shipping_total_cost}</Text>}
+                    {data.shipping_cod != 'no' && <Text>COD :{data.shipping_total_cost}</Text>}
                     {data.tracking_status_id == '13' && <Text>Delivery gagal alasan : {data.reason.shipping_history_desc.split(".")[1]}</Text>}
                     {data.tracking_status_id == '9' && <Text>Status Delivery Sukses</Text>}
                 </View>
@@ -76,11 +76,13 @@ const AccordionDelivery = (props) => {
                   }
                 </View>
             </View>
+            { data.tracking_status_id != '13' && data.tracking_status_id != '9' &&
             <View style={styles.buttongroup}>
                 <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>WA Call</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>WA Chat</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }} onPress={()=>{Linking.openURL(`http://api.whatsapp.com/send?phone=${data.telp.replace(data.telp[0], '+62')}`)}}>WA Chat</Text></TouchableOpacity>
                 <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>Navigasi</Text></TouchableOpacity>
             </View>
+              }
           </ListItem.Content>
         </ListItem>
       </ListItem.Accordion>
