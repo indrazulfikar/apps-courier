@@ -3,13 +3,15 @@ import React from 'react';
 import {
 StyleSheet
 } from 'react-native';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 const Footer = (props) => {
     const [index, setIndex] = React.useState(0);
     const changeHandler = (number) => {
         setIndex(number)
         if(number == 0){
             router.push('/scanMenu')
+        } else if(number == 2){
+            router.push('/profile')
         }
     }
 

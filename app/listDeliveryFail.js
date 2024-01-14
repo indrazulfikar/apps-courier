@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { HostUri } from './_components/HostUri';
 import AccordionDelivery from './_components/AccordionDelivery'
 import * as SecureStore from 'expo-secure-store';
+import { router } from "expo-router";
 import axios from 'axios';
 
 export default function listDeliveryFail() {
@@ -67,7 +68,7 @@ export default function listDeliveryFail() {
         </View>
 
         <View style={styles.datepickContainer}>
-          <View style={{ margin:10 }}>
+          <View>
             <CustomDatePick />
           </View>
           <View>
@@ -137,7 +138,8 @@ const styles = StyleSheet.create({
     flexDirection:'column',
   },
   headerContainer : {
-    height:'8%'
+    // flex:2,
+    height:'10%'
   },
   headerChild : {
     flex: 1,
@@ -152,7 +154,7 @@ const styles = StyleSheet.create({
     flex:1
   },
   datepickContainer : { 
-    height:'8%',
+    height:'10%',
     flexDirection : 'row', 
     alignItems: "center", 
     justifyContent: "space-evenly" 

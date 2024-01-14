@@ -231,7 +231,7 @@ export default function scanMenu() {
       flexDirection:'column',
     },
     headerContainer : {
-      flex:2,
+      height:'10%'
     },
     contentItem : {
       padding:10, 

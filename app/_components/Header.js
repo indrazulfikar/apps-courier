@@ -92,6 +92,7 @@ return (
       centerComponent={{}}
       backgroundColor = '#ff0000'
       placement = 'left'
+      containerStyle={{ flex:1, marginBottom:5 }}
     />
     <Dialog
       isVisible={popupLogout}

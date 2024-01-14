@@ -8,6 +8,8 @@ import { useState, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import AccordionPickUp from './_components/AccordionPickUp';
 import AccordionPickUpCorporate from './_components/AccordionPickUpCorporate';
+import { router } from "expo-router";
+import  axios  from 'axios';
 
 export default function listPickUpSuccess() {
   const [startDate, setStartDate] = useState('');
@@ -24,58 +26,85 @@ export default function listPickUpSuccess() {
     getData();
     getCorporate();
   }, []);
-
   const getData = async () => {
     await SecureStore.getItemAsync('secured_token').then((token) => {
-      fetch(HostUri+'pickup/success', {
-        method: 'GET',
+      axios({
+        method: "get",
+        url: HostUri+'pickup/success',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization' : 'Bearer '+token       
+          "Content-Type": 'application/json',
+          "Authorization" : `Bearer ${token}`,
         },
-      })
-      .then(response => {
-        if (!response.ok) {
+      }).then(function (response) {
+          // berhasil
           setLoading(false);
-          throw new Error('Disconnected please check connection');
-        }
-        return response.json();
-      })
-      .then( (result) => {
-        setLoading(false);
-        setData(result.data);
-      })
-      .catch(error => {
-        setLoading(false);
-        console.error('Error:', error);
-      })
+          setData(response.data.data);
+        }).catch(function (error) {
+          // masuk ke server tapi return error (unautorized dll)
+          if (error.response) {
+          setLoading(false);
+          //gagal login
+          if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
+            {
+              SecureStore.deleteItemAsync('secured_token');
+              SecureStore.deleteItemAsync('secured_name');
+              router.replace('/');
+            }
+            // console.error(error.response.data);
+            // console.error(error.response.status);
+            // console.error(error.response.headers);
+          } else if (error.request) {
+          setLoading(false);
+          // ga konek ke server
+            alert('Check Koneksi anda !')
+            console.error(error.request);
+          } else {
+          setLoading(false);
+          // error yang ga di sangka2
+            console.error("Error", error.message);
+          }
+      });
     });
   }
 
   const getCorporate = async () => {
     await SecureStore.getItemAsync('secured_token').then((token) => {
-      fetch(HostUri+'pickup/corporate/success', {
-        method: 'GET',
+      axios({
+        method: "get",
+        url: HostUri+'pickup/corporate/success',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization' : 'Bearer '+token       
+          "Content-Type": 'application/json',
+          "Authorization" : `Bearer ${token}`,
         },
-      })
-      .then(response => {
-        if (!response.ok) {
+      }).then(function (response) {
+          // berhasil
           setLoadingCorporate(false);
-          throw new Error('Disconnected please check connection');
-        }
-        return response.json();
-      })
-      .then( (result) => {
-        setLoadingCorporate(false);
-        setDataCorporate(result.data);
-      })
-      .catch(error => {
-        setLoadingCorporate(false);
-        console.error('Error:', error);
-      })
+          setDataCorporate(response.data.data);
+        }).catch(function (error) {
+          // masuk ke server tapi return error (unautorized dll)
+          if (error.response) {
+          setLoadingCorporate(false);
+          //gagal login
+          if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
+            {
+              SecureStore.deleteItemAsync('secured_token');
+              SecureStore.deleteItemAsync('secured_name');
+              router.replace('/');
+            }
+            // console.error(error.response.data);
+            // console.error(error.response.status);
+            // console.error(error.response.headers);
+          } else if (error.request) {
+          setLoadingCorporate(false);
+          // ga konek ke server
+            alert('Check Koneksi anda !')
+            console.error(error.request);
+          } else {
+          setLoadingCorporate(false);
+          // error yang ga di sangka2
+            console.error("Error", error.message);
+          }
+      });
     });
   }
   
@@ -104,7 +133,7 @@ export default function listPickUpSuccess() {
           />
 
           <View style={styles.listContainer}>
-            <ScrollView>
+            <ScrollView style={{ flex:1 }}>
             {
               loading &&
               <View style={{ flex:1, flexDirection:'column', padding:10 }}>
@@ -136,7 +165,7 @@ export default function listPickUpSuccess() {
               width={2}
               orientation="horizontal"
             />
-            <ScrollView>
+            <ScrollView style={{ flex:1 }}>
             {
               loadingCorporate &&
               <View style={{ flex:1, flexDirection:'column', padding:10 }}>
@@ -174,7 +203,8 @@ const styles = StyleSheet.create({
     flexDirection:'column',
   },
   headerContainer : {
-    flex:2,
+    // flex:2,
+    height:'10%'
   },
   headerChild : {
     flex: 1,

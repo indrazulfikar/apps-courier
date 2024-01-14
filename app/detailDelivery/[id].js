@@ -244,7 +244,8 @@ const styles = StyleSheet.create({
     flexDirection:'column',
   },
   headerContainer : {
-    flex:2,
+    // flex:2,
+    height:'10%'
   },
   headerChild : {
     flex: 1,

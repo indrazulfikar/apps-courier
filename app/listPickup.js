@@ -245,8 +245,8 @@ const styles = StyleSheet.create({
     height:'10%',
   },
   headerChild : {
-    height:'10%',
-    flex: 1,
+    height:'4%',
+    // flex: 1,
     flexDirection : 'row',
     marginHorizontal:5,
   },
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     flex:1
   },
   totalContainer : {
-    height:'10%',
+    height:'6%',
     marginHorizontal:10,
 
   },

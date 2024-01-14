@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     flexDirection:'column',
   },
   headerContainer : {
-    height:'8%'
+    height:'10%'
   },
   headerChild : {
     flex: 1,

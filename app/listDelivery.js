@@ -1,6 +1,6 @@
 import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView} from 'react-native';
 import { ListItem, Divider, Skeleton } from '@rneui/themed';
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
 import {SelectList} from 'react-native-dropdown-select-list';
@@ -148,7 +148,8 @@ const styles = StyleSheet.create({
     flexDirection:'column',
   },
   headerContainer : {
-    flex:2,
+    // flex:2,
+    height:'10%'
   },
   headerChild : {
     flex: 1,

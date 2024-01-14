@@ -294,8 +294,8 @@ const styles = StyleSheet.create({
     flexDirection:'column',
   },
   headerContainer : {
-    // height:'10%'
-    flex:1
+    height:'10%'
+    // flex:1
   },
   listContainer : {
     // height:'70%',
