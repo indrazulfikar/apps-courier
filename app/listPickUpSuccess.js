@@ -1,4 +1,4 @@
-import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView} from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView, FlatList} from 'react-native';
 import { ListItem, Divider, Skeleton } from '@rneui/themed';
 import Header from './_components/Header';
 import Footer from './_components/Footer';
@@ -22,15 +22,28 @@ export default function listPickUpSuccess() {
   const [dataCorporate, setDataCorporate] = useState([]);
   const [errCorporate, setErrCorporate] = useState('Disconnected Please Check your Connection !');
 
+  const [loadingMoreSeller, setLoadingMoreSeller] = useState(false);
+  const [currentPageSeller, setCurrentPageSeller] = useState(1);
+  const [lastPageSeller, setLastPageSeller] = useState(1);
+  const [totalSeller, setTotalSeller] = useState(0);
+
+  const [loadingMoreCorp, setLoadingMoreCorp] = useState(false);
+  const [currentPageCorp, setCurrentPageCorp] = useState(1);
+  const [lastPageCorp, setLastPageCorp] = useState(1);
+  const [totalCorp, setTotalCorp] = useState(0);
+
+
   useEffect(() => {
     getData();
     getCorporate();
   }, []);
+
+
   const getData = async () => {
     await SecureStore.getItemAsync('secured_token').then((token) => {
       axios({
         method: "get",
-        url: HostUri+'pickup/success',
+        url: HostUri+'pickup/success?page='+currentPageSeller,
         headers: {
           "Content-Type": 'application/json',
           "Authorization" : `Bearer ${token}`,
@@ -38,11 +51,21 @@ export default function listPickUpSuccess() {
       }).then(function (response) {
           // berhasil
           setLoading(false);
-          setData(response.data.data);
+          setLoadingMoreSeller(false);
+          // console.log(response.data.data.data)
+          if(currentPageSeller == 1){
+            setData(response.data.data.data)
+          }else{
+            setData([...data, ...response.data.data.data]);
+          }
+          setLastPageSeller(response.data.data.last_page);
+          setTotalSeller(response.data.data.total)
+
         }).catch(function (error) {
           // masuk ke server tapi return error (unautorized dll)
           if (error.response) {
           setLoading(false);
+          setLoadingMoreSeller(false);
           //gagal login
           if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
             {
@@ -54,12 +77,14 @@ export default function listPickUpSuccess() {
             // console.error(error.response.status);
             // console.error(error.response.headers);
           } else if (error.request) {
+          setLoadingMoreSeller(false);
           setLoading(false);
           // ga konek ke server
             alert('Check Koneksi anda !')
             console.error(error.request);
           } else {
           setLoading(false);
+          setLoadingMoreSeller(false);
           // error yang ga di sangka2
             console.error("Error", error.message);
           }
@@ -71,18 +96,31 @@ export default function listPickUpSuccess() {
     await SecureStore.getItemAsync('secured_token').then((token) => {
       axios({
         method: "get",
-        url: HostUri+'pickup/corporate/success',
+        url: HostUri+'pickup/corporate/success?page='+currentPageCorp,
         headers: {
           "Content-Type": 'application/json',
           "Authorization" : `Bearer ${token}`,
         },
       }).then(function (response) {
           // berhasil
+          // berhasil
           setLoadingCorporate(false);
-          setDataCorporate(response.data.data);
+          setLoadingMoreCorp(false);
+          // console.log(response.data.data.data)
+          if(currentPageCorp == 1){
+            setDataCorporate(response.data.data.data)
+          }else{
+            setDataCorporate([...dataCorporate, ...response.data.data.data]);
+          }
+          setLastPageCorp(response.data.data.last_page);
+          setTotalCorp(response.data.data.total)
+
+          // setLoadingCorporate(false);
+          // setDataCorporate(response.data.data.data);
         }).catch(function (error) {
           // masuk ke server tapi return error (unautorized dll)
           if (error.response) {
+          setLoadingMoreCorp(false);
           setLoadingCorporate(false);
           //gagal login
           if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
@@ -95,6 +133,7 @@ export default function listPickUpSuccess() {
             // console.error(error.response.status);
             // console.error(error.response.headers);
           } else if (error.request) {
+          setLoadingMoreCorp(false);
           setLoadingCorporate(false);
           // ga konek ke server
             alert('Check Koneksi anda !')
@@ -102,10 +141,28 @@ export default function listPickUpSuccess() {
           } else {
           setLoadingCorporate(false);
           // error yang ga di sangka2
+          setLoadingMoreCorp(false);
             console.error("Error", error.message);
           }
       });
     });
+  }
+
+  
+  const moreDataHandler = () => {
+    if(currentPageSeller < lastPageSeller){
+      setLoadingMoreSeller(true);
+      setCurrentPageSeller(currentPageSeller+1);
+      getData()
+    }
+  }
+
+  const moreDataCorpHandler = () => {
+    if(currentPageCorp < lastPageCorp){
+      setLoadingMoreCorp(true);
+      setCurrentPageCorp(currentPageCorp+1);
+      // getData()
+    }
   }
   
     return(
@@ -123,22 +180,46 @@ export default function listPickUpSuccess() {
               <CustomDatePick />
             </View>
           </View>
-          <Text style={{marginHorizontal: 5, fontWeight:'bold' }}>Seller ({data.length})</Text>
-
-          <Divider
-            style={{margin: 5 }}
-            color="red"
-            width={2}
-            orientation="horizontal"
-          />
 
           <View style={styles.listContainer}>
-            <ScrollView style={{ flex:1 }}>
-            {
-              loading &&
-              <View style={{ flex:1, flexDirection:'column', padding:10 }}>
-                {
-                  [{},{},{},{},{},{},].map((l, i) => (
+            <View style={{ flex:1 }}>
+            { loading &&
+              [{},{},{},{},{},{},].map((l, i) => (
+                <Skeleton
+                // LinearGradientComponent={LinearGradient}
+                animation="pulse"
+                width={'100%'}
+                height={60}
+                style={{ marginBottom:5 }}
+                key={i}
+              />
+                ))
+            }
+              <FlatList               
+                data={data}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) =>  <AccordionPickUp data={ item } />}
+                initialNumToRender={15}   // how many item to display first
+                onEndReachedThreshold={0.5} // so when you are at 5 pixel from the bottom react run onEndReached function
+                ListHeaderComponent ={
+                  <View style={{ backgroundColor:'white' }}>
+                    <Text style={{marginHorizontal: 5, fontWeight:'bold' }}>Seller ({totalSeller})</Text>
+                    <Divider
+                      style={{margin: 5 }}
+                      color="red"
+                      width={2}
+                      orientation="horizontal"
+                    />
+                  </View>}
+                  stickyHeaderIndices={[0]}
+                onEndReached={() => {
+                  moreDataHandler();
+                }}
+                ListFooterComponent={
+                  <View>
+                  {
+                  loadingMoreSeller &&
+                  [{}].map((l, i) => (
                     <Skeleton
                     // LinearGradientComponent={LinearGradient}
                     animation="pulse"
@@ -147,30 +228,53 @@ export default function listPickUpSuccess() {
                     style={{ marginBottom:5 }}
                     key={i}
                   />
-                    ))
+                    ))}
+                    {
+                      data.length == 0 && !loading &&
+                      <Text>No Data Found</Text>
+                    }
+                  </View>
                 }
-              </View>
-              
-            }
-              {
-                data.map((l, i) => (
-                  <AccordionPickUp data={ l } key={i} />
-                ))
+              />
+            </View>
+            <View style={{ flex:1 }}>
+              { loadingCorporate &&
+                [{},{},{},{},{},{},].map((l, i) => (
+                  <Skeleton
+                  // LinearGradientComponent={LinearGradient}
+                  animation="pulse"
+                  width={'100%'}
+                  height={60}
+                  style={{ marginBottom:5 }}
+                  key={i}
+                />
+                  ))
               }
-            </ScrollView>
-            <Text style={{marginHorizontal: 5, fontWeight:'bold' }}>Corporate ({dataCorporate.length})</Text>
-            <Divider
-              style={{marginHorizontal: 5 }}
-              color="red"
-              width={2}
-              orientation="horizontal"
-            />
-            <ScrollView style={{ flex:1 }}>
-            {
-              loadingCorporate &&
-              <View style={{ flex:1, flexDirection:'column', padding:10 }}>
-                {
-                  [{},{},{},{},{},{},].map((l, i) => (
+              <FlatList               
+                data={dataCorporate}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) =>  <AccordionPickUpCorporate data={ item } />}
+                initialNumToRender={15}   // how many item to display first
+                onEndReachedThreshold={0.5} // so when you are at 5 pixel from the bottom react run onEndReached function
+                ListHeaderComponent ={
+                  <View style={{ backgroundColor:'white' }}>
+                    <Text style={{marginHorizontal: 5, fontWeight:'bold' }}>Corporate ({totalCorp})</Text>
+                    <Divider
+                      style={{margin: 5 }}
+                      color="red"
+                      width={2}
+                      orientation="horizontal"
+                    />
+                  </View>}
+                  stickyHeaderIndices={[0]}
+                onEndReached={() => {
+                  moreDataCorpHandler();
+                }}
+                ListFooterComponent={
+                  <View>
+                  {
+                  loadingMoreCorp &&
+                  [{}].map((l, i) => (
                     <Skeleton
                     // LinearGradientComponent={LinearGradient}
                     animation="pulse"
@@ -179,17 +283,15 @@ export default function listPickUpSuccess() {
                     style={{ marginBottom:5 }}
                     key={i}
                   />
-                    ))
+                    ))}
+                    {
+                      dataCorporate.length == 0 && !loadingCorporate &&
+                      <Text>No Data Found</Text>
+                    }
+                  </View>
                 }
-              </View>
-              
-            }
-              {
-                dataCorporate.map((l, i) => (
-                  <AccordionPickUpCorporate data={ l } key={i} />
-                ))
-              }
-            </ScrollView>
+              />
+            </View>
           </View>
           <Footer  />
         </SafeAreaView>

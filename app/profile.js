@@ -16,7 +16,7 @@ export default profile = () => {
 
     const copyHandler = async (referal) => {
         await Clipboard.setStringAsync(referal).then(()=>{
-            alert('copied !')
+            // alert('copied !')
         });
     }
 
@@ -106,9 +106,9 @@ export default profile = () => {
                     </View>
                     <View style={{ flex: 3 }}>
                         <Text style={{ fontSize:18, fontWeight:'bold' }}>{data.fullname}</Text>
-                        {data.company && <Text>{data.company}</Text> }
                         <Text>{data.email}</Text>
                         <Text>{data.telp}</Text>
+                        { data.company &&  <Text>{data.company.company_name}</Text> }
                     </View>
                 </View>
             </View>
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         backgroundColor: "white",
         borderRadius: 10,
-        width: "80%",
+        width: "90%",
         height: 20,
         marginBottom: 10,
         alignItems: "center",
@@ -221,6 +221,7 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 10,
         marginLeft: 20,
-        color:'blue'
+        color:'blue',
+        fontSize:10
       }
 });

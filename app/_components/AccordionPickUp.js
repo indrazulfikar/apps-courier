@@ -67,9 +67,10 @@ const AccordionPickUp = (props) => {
                     {data.telp && <Text>Telp. {data.telp}</Text>}
                     {data.shipping_product_weight && <Text>Berat : {data.shipping_product_weight} gram</Text>}
                     {data.shipping_status == 'pickedup' && <Text>Status : Pickup Success</Text>}
-                    {data.shipping_status == 'miss route' && <Text>Status : {data.reason.shipping_history_desc}</Text>}
+                    {data.tracking_status_id == '3' && data.reason && <Text>Status : {data.reason.shipping_history_desc.split(".")[1]}</Text>}
+
                  </View>
-                {( data.shipping_status != 'pickedup' && data.shipping_status != 'miss route')  && (<View><TouchableOpacity><Text onPress={toggleModal} style={{ color:'blue',  fontWeight:'bold' }}>Update</Text></TouchableOpacity></View>)}
+                {( data.tracking_status_id  == '2')  && (<View><TouchableOpacity><Text onPress={toggleModal} style={{ color:'blue',  fontWeight:'bold' }}>Update</Text></TouchableOpacity></View>)}
           <Dialog isVisible={loading} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
             <Dialog.Loading />
           </Dialog>
@@ -140,7 +141,7 @@ const AccordionPickUp = (props) => {
          
           </Dialog>
             </View>
-            { data.shipping_status != 'pickedup' && data.shipping_status != 'miss route' &&
+            { data.tracking_status_id == '2' &&
             (
             <View style={styles.buttongroup}>
                 <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>WA Call</Text></TouchableOpacity>

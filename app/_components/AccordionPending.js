@@ -75,7 +75,7 @@ const AccordionPending = (props) => {
                     {data.shipping_product_weight && <Text>Berat {data.shipping_product_weight} gram</Text>}
                     {data.service && <Text>Service {data.service}</Text>}
                     {data.shipping_cod != 'no' && <Text>{data.shipping_total_cost}</Text>}
-                    {[10, 11, 12].includes(data.tracking_status_id)  && <Text>Delivery Pending | alasan : {data.reason.shipping_history_desc.split(".")[1]}</Text>}
+                    {[10, 11, 12].includes(data.tracking_status_id)  && data.reason &&<Text>Delivery Pending | alasan : {data.reason.shipping_history_desc.split(".")[1]}</Text>}
                     {data.tracking_status_id == '9' && <Text>Status Delivery Sukses</Text>}
                 </View>
                 <View>

@@ -26,13 +26,13 @@ export default function listPickUpFail() {
   
   useEffect(() => {
     getData();
-  }, [currentPage]);
+  }, []);
 
   const getMore = () => {
     if(currentPage < lastPage){
       setLoadingmore(true);
       setCurrentPage(currentPage+1);
-      // getData()
+      getData()
     }
   }
 
@@ -105,17 +105,30 @@ export default function listPickUpFail() {
             <CustomDatePick />
           </View>
         </View>
-        <Divider
-          style={{marginHorizontal: 5 }}
-          color="red"
-          width={2}
-          orientation="horizontal"
-        />
-        {
-          loading &&
-          <View style={{ flex:1, flexDirection:'column', padding:10 }}>
-            {
-              [{},{},{},{},{},{}].map((l, i) => (
+        <View style={styles.listContainer}>
+        <FlatList               
+          data={data}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) =>  <AccordionPickUp data={ item } />}
+          initialNumToRender={15}   // how many item to display first
+          onEndReachedThreshold={0.5} // so when you are at 5 pixel from the bottom react run onEndReached function
+          ListHeaderComponent ={
+            <Divider
+                style={{margin: 5 }}
+                color="red"
+                width={2}
+                orientation="horizontal"
+              />
+            }
+            stickyHeaderIndices={[0]}
+            onEndReached={() => {
+              getMore();
+            }}
+            ListFooterComponent={
+              <View>
+              {
+              loadingmore &&
+              [{}].map((l, i) => (
                 <Skeleton
                 // LinearGradientComponent={LinearGradient}
                 animation="pulse"
@@ -124,40 +137,35 @@ export default function listPickUpFail() {
                 style={{ marginBottom:5 }}
                 key={i}
               />
-                ))
-            }
-          </View>
-          
-        }
-        { !loading &&
-          <FlatList               
-              data={data}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={({ item }) =>  <AccordionPickUp data={ item } />}
-              initialNumToRender={20}   // how many item to display first
-              onEndReachedThreshold={1} // so when you are at 5 pixel from the bottom react run onEndReached function
-              onEndReached={() => {
-                  getMore();
-              }}
-          />
-            }
-          {
-            loadingmore &&
-            <View style={{ flex:1, flexDirection:'column', padding:10 }}>
+                ))} 
               {
-                [{}].map((l, i) => (
-                  <Skeleton
-                  // LinearGradientComponent={LinearGradient}
-                  animation="pulse"
-                  width={'100%'}
-                  height={60}
-                  style={{ marginBottom:5 }}
-                  key={i}
-                />
-                  ))
+                data.length == 0 && !loading &&
+                <View style={{ backgroundColor:'white' }}>
+                    <Text>No Data Found</Text>
+                </View>
               }
-            </View>
-          }
+              {
+                loading &&
+                <View style={{ flex:1, flexDirection:'column' }}>
+                  {
+                    [{},{},{},{},{},{}].map((l, i) => (
+                      <Skeleton
+                      // LinearGradientComponent={LinearGradient}
+                      animation="pulse"
+                      width={'100%'}
+                      height={60}
+                      style={{ marginBottom:5 }}
+                      key={i}
+                    />
+                      ))
+                  }
+                </View>
+                
+              }
+              </View>
+            }
+        />
+        </View>
         <Footer  />
       </SafeAreaView>
     )
@@ -199,8 +207,9 @@ const styles = StyleSheet.create({
     fontWeight:'bold'
   },
   listContainer : {
-    height:'70%',
-    paddingHorizontal:10
+    // height:'70%',
+    flex:12,
+    paddingHorizontal:5
   },
   tableHead :{
     fontSize:12,

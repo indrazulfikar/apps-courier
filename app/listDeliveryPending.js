@@ -1,4 +1,4 @@
-import { StyleSheet, Text, SafeAreaView, View, ScrollView} from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, ScrollView, FlatList} from 'react-native';
 import Header from './_components/Header';
 import Footer from './_components/Footer';
 import { useState, useEffect } from 'react';
@@ -19,6 +19,11 @@ export default function listDeliveryPending() {
   const [startCamera, setStartCamera] = useState(false);
   const [loadingHttp, setLoadingHttp] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loadingmore, setLoadingmore]= useState(false);
+
   const [returnData, setReturnData] = useState({
     shipping_id : '',
     selected_choice : '',
@@ -34,11 +39,19 @@ export default function listDeliveryPending() {
         getData();
       }, []);
 
+      const getMore = () => {
+        if(currentPage < lastPage){
+          setLoadingmore(true);
+          setCurrentPage(currentPage+1);
+          getData()
+        }
+      }
+
       const getData = async () => {
         await SecureStore.getItemAsync('secured_token').then((token) => {
           axios({
             method: "get",
-            url: HostUri+'delivery/pending',
+            url: HostUri+'delivery/pending?page='+currentPage,
             headers: {
               "Content-Type": 'application/json',
               "Authorization" : `Bearer ${token}`,
@@ -46,11 +59,22 @@ export default function listDeliveryPending() {
           }).then(function (response) {
               // berhasil
               setLoading(false);
-              setData(response.data.data);
+              setLoadingmore(false);
+              // setData(response.data.data.data);
+              // console.log(response.data.data.data)
+              if(currentPage == 1){
+                setData(response.data.data.data)
+              }else{
+                setData([...data, ...response.data.data.data]);
+              }
+              setLastPage(response.data.data.last_page);
+              setTotal(response.data.data.total)
             }).catch(function (error) {
               // masuk ke server tapi return error (unautorized dll)
               if (error.response) {
-                //gagal login
+              setLoadingmore(false);
+              setLoading(false);
+              //gagal login
                 if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
                 {
                   SecureStore.deleteItemAsync('secured_token');
@@ -64,11 +88,13 @@ export default function listDeliveryPending() {
                 // ga konek ke server
                 alert('Check Koneksi anda !')
                 console.error(error.request);
-                setLoading(false);
+              setLoadingmore(false);
+              setLoading(false);
               } else {
                 // error yang ga di sangka2
                 console.error("Error", error.message);
-                setLoading(false);
+              setLoadingmore(false);
+              setLoading(false);
               }
           });
         });
@@ -141,6 +167,7 @@ export default function listDeliveryPending() {
            setLoadingHttp(false);
            if (error.response) {
              //gagal login
+             setLoadingHttp(false);
              if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
              {
                SecureStore.deleteItemAsync('secured_token');
@@ -167,7 +194,6 @@ export default function listDeliveryPending() {
       
     return(
       <SafeAreaView style={styles.container}>
-
         <View style={styles.headerContainer}>
           <Header title='Paket Pending'/>
         </View>
@@ -175,16 +201,9 @@ export default function listDeliveryPending() {
         <View style={styles.headerChild}>
         <Text style={styles.tanggal}>{ new Date().toLocaleDateString('id-ID', {weekday: 'long',  month: 'long', day:'2-digit', year :'numeric' }) }</Text>
         <View style={styles.dropdownContainer}>
-        <Text style={styles.totalText}>Total : {Object.keys(data).length} AWB</Text>
+        <Text style={styles.totalText}>Total : {total} AWB</Text>
         </View>
       </View>
-
-        <Divider
-          style={{margin: 5 }}
-          color="red"
-          width={2}
-          orientation="horizontal"
-        />
 
         <View style={styles.listContainer}>
         {
@@ -193,55 +212,74 @@ export default function listDeliveryPending() {
         }
         {!startCamera && 
           (
-        <ScrollView >
-          {
-            data.length == 0 && !loading &&
-            <Text>No Data Found</Text>
-          }
+        <View >
           {
             loadingHttp && 
             <Dialog isVisible={loadingHttp} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
               <Dialog.Loading />
             </Dialog>
           }
-
-          {
-            loading &&
-            <View style={{ flex:1, flexDirection:'column', padding:10 }}>
-              {
-                [{},{},{},{},{},{},].map((l, i) => (
-                  <Skeleton
-                  // LinearGradientComponent={LinearGradient}
-                  animation="pulse"
-                  width={'100%'}
-                  height={60}
-                  style={{ marginBottom:5 }}
-                  key={i}
-                />
-                  ))
-              }
-            </View>
-            
-          }
-            { !loading &&
-              data.map((l, i) => (
-                <AccordionPending data={ l } key={l.shipping_awb} onPressUpdate ={onPressUpdate} reasonList ={reasonList}/>
-                // <ListItem key={i} bottomDivider Component={View}>
-                //   <ListItem.Content>
-                //     <ListItem.Subtitle><Text style={styles.tableHead}>AWB</Text></ListItem.Subtitle>
-                //     <ListItem.Title><Text style={{ fontWeight:'bold' }}>{l.shipping_awb}</Text></ListItem.Title>
-                //     <ListItem.Subtitle><Text style={styles.tableHead}>Alasan</Text></ListItem.Subtitle>
-                //     <ListItem.Title>{l.reason}</ListItem.Title>
-                //   </ListItem.Content>
-                //   <ListItem.Content right>
-                //     <ListItem.Subtitle><Text style={styles.tableHead}>Status</Text></ListItem.Subtitle>
-                //     <ListItem.Title><Text style={{ color:'red' }}>{l.shipping_status}</Text></ListItem.Title>
-                //     <ListItem.Subtitle ><TouchableOpacity><Text style={{ color:'blue' }}>Update</Text></TouchableOpacity></ListItem.Subtitle>
-                //   </ListItem.Content>
-                // </ListItem>
-              ))
+          <FlatList               
+          data={data}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) =>  <AccordionPending data={ item } key={item.shipping_awb} onPressUpdate ={onPressUpdate} reasonList ={reasonList}/>}
+          initialNumToRender={15}   // how many item to display first
+          onEndReachedThreshold={0.5} // so when you are at 5 pixel from the bottom react run onEndReached function
+          ListHeaderComponent ={
+            <Divider
+                style={{margin: 5 }}
+                color="red"
+                width={2}
+                orientation="horizontal"
+              />
             }
-          </ScrollView>
+            stickyHeaderIndices={[0]}
+            onEndReached={() => {
+              getMore();
+            }}
+            ListFooterComponent={
+              <View>
+              {
+              loadingmore &&
+              [{}].map((l, i) => (
+                <Skeleton
+                // LinearGradientComponent={LinearGradient}
+                animation="pulse"
+                width={'100%'}
+                height={60}
+                style={{ marginBottom:5 }}
+                key={i}
+              />
+                ))} 
+              {
+                data.length == 0 && !loading &&
+                <View style={{ backgroundColor:'white' }}>
+                    <Text>No Data Found</Text>
+                </View>
+              }
+              {
+                loading &&
+                <View style={{ flex:1, flexDirection:'column' }}>
+                  {
+                    [{},{},{},{},{},{}].map((l, i) => (
+                      <Skeleton
+                      // LinearGradientComponent={LinearGradient}
+                      animation="pulse"
+                      width={'100%'}
+                      height={60}
+                      style={{ marginBottom:5 }}
+                      key={i}
+                    />
+                      ))
+                  }
+                </View>
+                
+              }
+              </View>
+            }
+        />
+         
+          </View>
           )
         }
             </View>
@@ -271,12 +309,6 @@ const styles = StyleSheet.create({
   dropdownContainer : {
     flex:1
   },
-  datepickContainer : { 
-    height:'8%',
-    flexDirection : 'row', 
-    alignItems: "center", 
-    justifyContent: "space-evenly" 
-  },
   totalContainer : {
     flex:1,
     margin:10
@@ -286,8 +318,9 @@ const styles = StyleSheet.create({
     fontWeight:'bold'
   },
   listContainer : {
-    height:'74%',
-    padding : 10
+    // height:'74%',
+    flex:12
+    // padding : 10
   },
   tableHead :{
     fontSize:12,

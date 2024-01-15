@@ -38,6 +38,7 @@ export default function detailListPickup() {
           // masuk ke server tapi return error (unautorized dll)
           if (error.response) {
             //gagal login
+            setLoading(false);
             if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
             {
               SecureStore.deleteItemAsync('secured_token');
