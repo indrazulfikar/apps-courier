@@ -144,7 +144,7 @@ export default function listDeliveryPending() {
         formData.append('img', { uri: manipResult.uri, name: filename, type });
        }
        await SecureStore.getItemAsync('secured_token').then((token) => {
-         let optHeader = (img == '') ? { "Content-Type": 'application/json', "Authorization" : `Bearer ${token}`} : {"content-Type": 'multipart/form-data', "Authorization" : `Bearer ${token}`};
+         let optHeader = {"content-Type": 'multipart/form-data', "Authorization" : `Bearer ${token}`};
        axios({
          method: "post",
          url: HostUri+'delivery/update',

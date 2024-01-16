@@ -1,4 +1,4 @@
-import { StyleSheet, Text, SafeAreaView, View, ScrollView} from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, ScrollView, FlatList} from 'react-native';
 import Header from '../_components/Header';
 import Footer from '../_components/Footer';
 import { useState, useEffect } from 'react';
@@ -19,6 +19,11 @@ export default function detailListDelivery() {
     const [err, setErr] = useState('')
     const [startCamera, setStartCamera] = useState(false);
     const [loadingHttp, setLoadingHttp] = useState(false);
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [lastPage, setLastPage] = useState(1);
+    const [total, setTotal] = useState(0);
+    const [loadingmore, setLoadingmore]= useState(false);
     
     const [returnData, setReturnData] = useState({
       shipping_id : '',
@@ -36,22 +41,40 @@ export default function detailListDelivery() {
         getData();
     }, []);
 
+    
+    const getMore = () => {
+      if(currentPage < lastPage){
+        setLoadingmore(true);
+        setCurrentPage(currentPage+1);
+        getData()
+      }
+    }
+
     const getData = async () => {
     await SecureStore.getItemAsync('secured_token').then((token) => {
       axios({
         method: "get",
-        url: HostUri+`delivery/seller/${id}`,
+        url: HostUri+`delivery/seller/${id}?page=`+currentPage,
         headers: {
           "Content-Type": 'application/json',
           "Authorization" : `Bearer ${token}`,
         },
       }).then(function (response) {
-          // berhasil
-          setLoading(false);
-          setBigData(response.data.data);
+           // berhasil
+           setLoading(false);
+           setLoadingmore(false);
+           // setData(response.data.data.data);
+           // console.log(response.data.data.data)
+           if(currentPage == 1){
+             setBigData(response.data.data.data)
+           }else{
+             setBigData([...bigdata, ...response.data.data.data]);
+           }
+           setLastPage(response.data.data.last_page);
+           setTotal(response.data.data.total)
         }).catch(function (error) {
           setLoading(false);
-
+          setLoadingmore(false);
           // masuk ke server tapi return error (unautorized dll)
           if (error.response) {
             //gagal login
@@ -68,11 +91,13 @@ export default function detailListDelivery() {
             // ga konek ke server
             alert('Check Koneksi anda !')
             console.error(error.request);
-            setLoading(false);
+           setLoadingmore(false);
+           setLoading(false);
           } else {
             // error yang ga di sangka2
             console.error("Error", error.message);
-            setLoading(false);
+           setLoadingmore(false);
+           setLoading(false);
           }
       });
     });
@@ -121,7 +146,7 @@ export default function detailListDelivery() {
         formData.append('img', { uri: manipResult.uri, name: filename, type });
       }
       await SecureStore.getItemAsync('secured_token').then((token) => {
-        let optHeader = (img == '') ? { "Content-Type": 'application/json', "Authorization" : `Bearer ${token}`} : {"Content-Type": 'multipart/form-data', "Authorization" : `Bearer ${token}`};
+        let optHeader = {"Content-Type": 'multipart/form-data', "Authorization" : `Bearer ${token}`};
       axios({
         method: "post",
         url: HostUri+'delivery/update',
@@ -176,15 +201,8 @@ export default function detailListDelivery() {
 
           <View style={styles.headerChild}>
             <Text style={styles.tanggal}>{ new Date().toLocaleDateString('id-ID', {weekday: 'long',  month: 'long', day:'2-digit', year :'numeric' }) }</Text>
-            <Text style={styles.dropdownContainer}>Total {Object.keys(bigdata).length} AWB</Text>
+            <Text style={styles.dropdownContainer}>Total {total} AWB</Text>
           </View>
-
-          <Divider
-            style={{margin: 5 }}
-            color="red"
-            width={2}
-            orientation="horizontal"
-          />
 
           <View style={styles.listContainer}>
           {
@@ -193,41 +211,76 @@ export default function detailListDelivery() {
           }
           {!startCamera && 
             (
-            <ScrollView>
-            {
-              bigdata.length == 0 && !loading &&
-              <Text>No Data Found</Text>
-            }
-            {
-              loadingHttp && 
-              <Dialog isVisible={loadingHttp} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
-                <Dialog.Loading />
-              </Dialog>
-            }
-            {
-                loading &&
-                <View style={{ flex:1, flexDirection:'column', padding:5 }}>
-                  {
-                    [{},{},{},{},{},{},].map((l, i) => (
-                      <Skeleton
-                      // LinearGradientComponent={LinearGradient}
-                      animation="pulse"
-                      width={'100%'}
-                      height={60}
-                      style={{ marginBottom:5 }}
-                      key={i}
-                    />
-                      ))
-                  }
+            <View>
+            <FlatList               
+            data={bigdata}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) =>  <AccordionDelivery data={ item } onPressUpdate ={onPressUpdate} reasonList ={reasonList}  />}
+            initialNumToRender={15}   // how many item to display first
+            onEndReachedThreshold={0.5} // so when you are at 5 pixel from the bottom react run onEndReached function
+            ListHeaderComponent ={
+              <View>
+              <Text>Delivery List</Text>
+              <Divider
+                  style={{margin: 5 }}
+                  color="red"
+                  width={2}
+                  orientation="horizontal"
+                />
+              </View>
+              }
+              stickyHeaderIndices={[0]}
+              onEndReached={() => {
+                getMore();
+              }}
+              ListFooterComponent={
+                <View>
+                {
+                loadingmore &&
+                [{}].map((l, i) => (
+                  <Skeleton
+                  // LinearGradientComponent={LinearGradient}
+                  animation="pulse"
+                  width={'100%'}
+                  height={60}
+                  style={{ marginBottom:5 }}
+                  key={i}
+                />
+                  ))} 
+                {
+                  bigdata.length == 0 && !loading &&
+                  <View style={{ backgroundColor:'white' }}>
+                      <Text>No Data Found</Text>
+                  </View>
+                }
+                {
+                  loading &&
+                  <View style={{ flex:1, flexDirection:'column' }}>
+                    {
+                      [{},{},{},{},{},{}].map((l, i) => (
+                        <Skeleton
+                        // LinearGradientComponent={LinearGradient}
+                        animation="pulse"
+                        width={'100%'}
+                        height={60}
+                        style={{ marginBottom:5 }}
+                        key={i}
+                      />
+                        ))
+                    }
+                  </View>
+                  
+                }
+                {
+                  loadingHttp && 
+                  <Dialog isVisible={loadingHttp} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
+                    <Dialog.Loading />
+                  </Dialog>
+                }
                 </View>
-                
               }
-              {
-                bigdata.map((l, i) => (
-                    <AccordionDelivery data={ l } key={l.shipping_awb} onPressUpdate ={onPressUpdate} reasonList ={reasonList}  />
-                ))
-              }
-            </ScrollView>
+          />
+            </View>
             )
             }
           </View>
