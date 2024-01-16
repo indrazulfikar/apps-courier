@@ -1,4 +1,4 @@
-import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView} from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView, FlatList} from 'react-native';
 import { ListItem, Divider, Skeleton } from '@rneui/themed';
 import { Link, router } from "expo-router";
 import Header from './_components/Header';
@@ -18,6 +18,35 @@ export default function listPickup() {
   const [dataCorporate, setDataCorporate] = useState([]);
   const [err, setErr] = useState('Disconnected Please Check your Connection !');
 
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loadingMore, setLoadingMore]= useState(false);
+
+  
+  const [currentPageCorp, setCurrentPageCorp] = useState(1);
+  const [lastPageCorp, setLastPageCorp] = useState(1);
+  const [totalCorp, setTotalCorp] = useState(0);
+  const [loadingMoreCorp, setLoadingMoreCorp]= useState(false);
+
+  const getMore = () => {
+    if(currentPage < lastPage){
+      setLoadingMore(true);
+      setCurrentPage(currentPage+1);
+      getData()
+    }
+  }
+
+  const getMoreCorp = () => {
+    if(currentPageCorp < lastPageCorp){
+      setLoadingMoreCorp(true);
+      setCurrentPageCorp(currentPage+1);
+      getDataCorporate()
+    }
+  }
+
+
   const urut = [
     // {key:'1', value:'Seller', disabled:true},
     {key:'1', value:'Seller'},
@@ -33,17 +62,27 @@ export default function listPickup() {
     await SecureStore.getItemAsync('secured_token').then((token) => {
       axios({
         method: "get",
-        url: HostUri+'pickup/corporate',
+        url: HostUri+'pickup/corporate?page='+currentPageCorp,
         headers: {
           "Content-Type": 'application/json',
           "Authorization" : `Bearer ${token}`,
         },
       }).then(function (response) {
-          // berhasil
-          //console.log(response.data);
+          /// berhasil
           setLoadingCorporate(false);
-          setDataCorporate(response.data.data);
+          setLoadingMoreCorp(false);
+          // setData(response.data.data.data);
+          console.log(response.data.data.data)
+          if(currentPage == 1){
+            setDataCorporate(response.data.data.data)
+          }else{
+            setDataCorporate([...data, ...response.data.data.data]);
+          }
+          // setData([...data, ...response.data.data]);
+          setLastPageCorp(response.data.data.last_page);
+          setTotalCorp(response.data.data.total)
         }).catch(function (error) {
+          setLoadingMoreCorp(false);
           setLoadingCorporate(false);
           // masuk ke server tapi return error (unautorized dll)
           if (error.response) {
@@ -59,11 +98,13 @@ export default function listPickup() {
             // console.error(error.response.headers);
           } else if (error.request) {
             // ga konek ke server
-            setLoadingCorporate(false);
+          setLoadingMoreCorp(false);
+          setLoadingCorporate(false);
             alert('Check Koneksi anda !')
             console.error(error.request);
           } else {
-            setLoadingCorporate(false);
+          setLoadingMoreCorp(false);
+          setLoadingCorporate(false); 
             // error yang ga di sangka2
             console.error("Error", error.message);
           }
@@ -76,17 +117,27 @@ export default function listPickup() {
     await SecureStore.getItemAsync('secured_token').then((token) => {
       axios({
         method: "get",
-        url: HostUri+'pickup/seller',
+        url: HostUri+'pickup/seller?page='+currentPage,
         headers: {
           "Content-Type": 'application/json',
           "Authorization" : `Bearer ${token}`,
         },
       }).then(function (response) {
-          // berhasil
+          /// berhasil
           setLoading(false);
-          setData(response.data.data);
+          setLoadingMore(false);
+          // setData(response.data.data.data);
+          if(currentPage == 1){
+            setData(response.data.data.data)
+          }else{
+            setData([...data, ...response.data.data.data]);
+          }
+          // setData([...data, ...response.data.data]);
+          setLastPage(response.data.data.last_page);
+          setTotal(response.data.data.total)
         }).catch(function (error) {
           // masuk ke server tapi return error (unautorized dll)
+          setLoadingMore(false);
           setLoading(false);
           if (error.response) {
             //gagal login
@@ -101,12 +152,14 @@ export default function listPickup() {
             // console.error(error.response.headers);
           } else if (error.request) {
             // ga konek ke server
-            setLoading(false);
+          setLoadingMore(false);
+          setLoading(false);
             alert('Check Koneksi anda !')
             console.error(error.request);
           } else {
             // error yang ga di sangka2
-            setLoading(false);
+          setLoadingMore(false);
+          setLoading(false);
             console.error("Error", error.message);
           }
       });
@@ -135,100 +188,160 @@ export default function listPickup() {
             </View>
           </View>
 
-          <View style={styles.totalContainer}><Text style={styles.totalText}>Total : {Object.keys(data).length} Seller | {Object.keys(dataCorporate).length} Corporate</Text></View>
+          <View style={styles.totalContainer}><Text style={styles.totalText}>Total : {total} Seller | {totalCorp} Corporate</Text></View>
           
-          <Text style={{marginHorizontal: 5, fontWeight:'bold' }}>Pickup Seller ({data.length})</Text>
-          <Divider
-            style={{marginHorizontal: 5 }}
-            color="red"
-            width={2}
-            orientation="horizontal"
-          />
+            <View style={styles.listContainer}>
+            <FlatList               
+                data={data}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={(item) => 
+                  <ListItem bottomDivider Component={TouchableOpacity} >
+                  <ListItem.Content>
+                    <ListItem.Title>{item.item.name} {item.item.total > 1 && "("+item.item.total+")"}</ListItem.Title>
+                    <ListItem.Subtitle>{item.item.subdistrict_name}</ListItem.Subtitle>
+                  </ListItem.Content>
+                  <ListItem.Content right>
+                    <ListItem.Subtitle ><Link href={"/detailPickup/"+item.item.user_id} asChild><Text style={{ color:'blue' }}>Detail</Text></Link></ListItem.Subtitle>
+                  </ListItem.Content>
+                </ListItem>
+                }
+                initialNumToRender={15}   // how many item to display first
+                onEndReachedThreshold={1} // so when you are at 5 pixel from the bottom react run onEndReached function
+                ListHeaderComponent ={
+                  <View style={{ backgroundColor:'white' }}>
+                    <Text style={{marginHorizontal: 5, fontWeight:'bold' }}>Pickup Seller ({total})</Text>
+                    <Divider
+                      style={{margin: 5 }}
+                      color="red"
+                      width={2}
+                      orientation="horizontal"
+                    />
+                  </View>
+                  }
+                  stickyHeaderIndices={[0]}
+                  onEndReached={() => {
+                    getMore();
+                  }}
+                  ListFooterComponent={
+                    <View>
+                    {
+                    loadingMore &&
+                    [{}].map((l, i) => (
+                      <Skeleton
+                      // LinearGradientComponent={LinearGradient}
+                      animation="pulse"
+                      width={'100%'}
+                      height={60}
+                      style={{ marginBottom:5 }}
+                      key={i}
+                    />
+                      ))} 
+                    {
+                      data.length == 0 && !loading &&
+                      <View style={{ backgroundColor:'white' }}>
+                          <Text>No Data Found</Text>
+                      </View>
+                    }
+                    {
+                      loading &&
+                      <View style={{ flex:1, flexDirection:'column' }}>
+                        {
+                          [{},{},{},{},{},{}].map((l, i) => (
+                            <Skeleton
+                            // LinearGradientComponent={LinearGradient}
+                            animation="pulse"
+                            width={'100%'}
+                            height={60}
+                            style={{ marginBottom:5 }}
+                            key={i}
+                          />
+                            ))
+                        }
+                      </View>
+                      
+                    }
+                    </View>
+                  }
+              />
+            </View>
 
-            <ScrollView style={styles.listContainer}>
-            {
-              loading &&
-              <View style={{ flex:1, flexDirection:'column', padding:10 }}>
-                {
-                  [{},{},{},{},{},{},].map((l, i) => (
-                    <Skeleton
-                    // LinearGradientComponent={LinearGradient}
-                    animation="pulse"
-                    width={'100%'}
-                    height={60}
-                    style={{ marginBottom:5 }}
-                    key={i}
-                  />
-                    ))
-                }
-              </View>
-              
-            }
-            {
-              data.length == 0 && !loading &&
-              <Text style={{marginHorizontal: 5 }}>No Data Found</Text>
-            }
-              {
-                data.map((l, i) => (
-                  <ListItem key={i} bottomDivider Component={TouchableOpacity} >
+            <View style={styles.listContainer}>
+            <FlatList               
+              data={dataCorporate}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={(item) => 
+                <ListItem bottomDivider Component={TouchableOpacity} >
                     <ListItem.Content>
-                      <ListItem.Title>{l.name} {l.total > 1 && "("+l.total+")"}</ListItem.Title>
-                      <ListItem.Subtitle>{l.subdistrict_name}</ListItem.Subtitle>
-                    </ListItem.Content>
-                    <ListItem.Content right>
-                      <ListItem.Subtitle ><Link href={"/detailPickup/"+l.user_id} asChild><Text style={{ color:'blue' }}>Detail</Text></Link></ListItem.Subtitle>
-                    </ListItem.Content>
-                  </ListItem>
-                ))
-              }
-            </ScrollView>
-            <Text style={{marginHorizontal: 5, fontWeight:'bold' }}>Pickup Corporate ({dataCorporate.length})</Text>
-            <Divider
-            style={{marginHorizontal: 5 }}
-            color="red"
-            width={2}
-            orientation="horizontal"
-          />
-            <ScrollView style={styles.listContainer}>
-            {
-              loadingCorporate &&
-              <View style={{ flex:1, flexDirection:'column', padding:10 }}>
-                {
-                  [{},{},{},{},{},{},].map((l, i) => (
-                    <Skeleton
-                    // LinearGradientComponent={LinearGradient}
-                    animation="pulse"
-                    width={'100%'}
-                    height={60}
-                    style={{ marginBottom:5 }}
-                    key={i}
-                  />
-                    ))
-                }
-              </View>
-              
-            }
-            {
-              dataCorporate.length == 0 && !loadingCorporate &&
-              <Text>No Data Found</Text>
-            }
-              {
-                dataCorporate.map((l, i) => (
-                  <ListItem key={i} bottomDivider Component={TouchableOpacity} >
-                    <ListItem.Content>
-                      <ListItem.Title>{l.company_name} {l.total > 1 && "("+l.total+")"}</ListItem.Title>
+                      <ListItem.Title>{item.item.company_name} {item.item.total > 1 && "("+item.item.total+")"}</ListItem.Title>
                     </ListItem.Content>
                     <ListItem.Content>
-                    <ListItem.Subtitle>{l.kelurahan}</ListItem.Subtitle>
+                    <ListItem.Subtitle>{item.item.kelurahan}</ListItem.Subtitle>
                   </ListItem.Content>
 
                     <ListItem.Content right>
-                      <ListItem.Subtitle ><Link href={"/detailPickupCorporate/"+l.user_id} asChild><Text style={{ color:'blue' }}>Detail</Text></Link></ListItem.Subtitle>
+                      <ListItem.Subtitle ><Link href={"/detailPickupCorporate/"+item.item.user_id} asChild><Text style={{ color:'blue' }}>Detail</Text></Link></ListItem.Subtitle>
                     </ListItem.Content>
                   </ListItem>
-                ))
               }
-            </ScrollView>
+              initialNumToRender={15}   // how many item to display first
+              onEndReachedThreshold={1} // so when you are at 5 pixel from the bottom react run onEndReached function
+              ListHeaderComponent ={
+                <View style={{ backgroundColor:'white' }}>
+                  <Text style={{marginHorizontal: 5, fontWeight:'bold' }}>Pickup Corporate ({totalCorp})</Text>
+                  <Divider
+                    style={{margin: 5 }}
+                    color="red"
+                    width={2}
+                    orientation="horizontal"
+                  />
+                </View>
+                }
+                stickyHeaderIndices={[0]}
+                onEndReached={() => {
+                  getMoreCorp();
+                }}
+                ListFooterComponent={
+                  <View>
+                  {
+                  loadingMoreCorp &&
+                  [{}].map((l, i) => (
+                    <Skeleton
+                    // LinearGradientComponent={LinearGradient}
+                    animation="pulse"
+                    width={'100%'}
+                    height={60}
+                    style={{ marginBottom:5 }}
+                    key={i}
+                  />
+                    ))} 
+                  {
+                    dataCorporate.length == 0 && !loadingCorporate &&
+                    <View style={{ backgroundColor:'white' }}>
+                        <Text>No Data Found</Text>
+                    </View>
+                  }
+                  {
+                    loadingCorporate &&
+                    <View style={{ flex:1, flexDirection:'column' }}>
+                      {
+                        [{},{},{},{},{},{}].map((l, i) => (
+                          <Skeleton
+                          // LinearGradientComponent={LinearGradient}
+                          animation="pulse"
+                          width={'100%'}
+                          height={60}
+                          style={{ marginBottom:5 }}
+                          key={i}
+                        />
+                          ))
+                      }
+                    </View>
+                    
+                  }
+                  </View>
+                }
+            />
+            </View>
             
           <Footer  />
         </SafeAreaView>
@@ -269,6 +382,6 @@ const styles = StyleSheet.create({
     marginTop:5
   },
   listContainer : {
-    height:'32%'
+    flex:1
   }
 });

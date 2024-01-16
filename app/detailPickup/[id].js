@@ -1,4 +1,4 @@
-import { StyleSheet, Text, SafeAreaView, View, ScrollView} from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, ScrollView, FlatList} from 'react-native';
 import Header from '../_components/Header';
 import Footer from '../_components/Footer';
 import { useState, useEffect } from 'react';
@@ -16,28 +16,51 @@ export default function detailListPickup() {
     const [loading, setLoading] = useState(true);
     const [loadingHttp, setLoadingHttp] = useState(false);
     const [err, setErr] = useState('')
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [lastPage, setLastPage] = useState(1);
+    const [total, setTotal] = useState(0);
+    const [loadingmore, setLoadingmore]= useState(false);
     
     useEffect(() => {
         getData();
     }, []);
 
+    const getMore = () => {
+      if(currentPage < lastPage){
+        setLoadingmore(true);
+        setCurrentPage(currentPage+1);
+        getData()
+      }
+    }
+
     const getData = async () => {
     await SecureStore.getItemAsync('secured_token').then((token) => {
       axios({
         method: "get",
-        url: HostUri+`pickup/seller/${id}`,
+        url: HostUri+`pickup/seller/${id}?page=`+currentPage,
         headers: {
           "Content-Type": 'application/json',
           "Authorization" : `Bearer ${token}`,
         },
       }).then(function (response) {
-          // berhasil
-          setLoading(false);
-          setBigData(response.data.data);
+           // berhasil
+           setLoading(false);
+           setLoadingmore(false);
+           // setData(response.data.data.data);
+           // console.log(response.data.data.data)
+           if(currentPage == 1){
+             setBigData(response.data.data.data)
+           }else{
+             setBigData([...bigdata, ...response.data.data.data]);
+           }
+           setLastPage(response.data.data.last_page);
+           setTotal(response.data.data.total)
         }).catch(function (error) {
           // masuk ke server tapi return error (unautorized dll)
           if (error.response) {
-            //gagal login
+           setLoadingmore(false);
+           //gagal login
             setLoading(false);
             if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
             {
@@ -50,11 +73,13 @@ export default function detailListPickup() {
             // console.error(error.response.headers);
           } else if (error.request) {
             // ga konek ke server
-            setLoading(false);
+           setLoadingmore(false);
+           setLoading(false);
             alert('Check Koneksi anda !')
             console.error(error.request);
           } else {
-            setLoading(false);
+           setLoadingmore(false);
+           setLoading(false);
             // error yang ga di sangka2
             console.error("Error", error.message);
           }
@@ -133,48 +158,76 @@ export default function detailListPickup() {
             </View>
           </View>
 
-          <Divider
-            style={{margin: 5 }}
-            color="red"
-            width={2}
-            orientation="horizontal"
-          />
-
-            <ScrollView style={styles.listContainer}>
-            {
-                loading &&
-                <View style={{ flex:1, flexDirection:'column', padding:5 }}>
-                  {
-                    [{},{},{},{},{},{},].map((l, i) => (
-                      <Skeleton
-                      // LinearGradientComponent={LinearGradient}
-                      animation="pulse"
-                      width={'100%'}
-                      height={60}
-                      style={{ marginBottom:5 }}
-                      key={i}
-                    />
-                      ))
-                  }
+            <View style={styles.listContainer}>
+            <FlatList               
+            data={bigdata}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) =>  <AccordionPickUp data={ item } onPressUpdate ={onPressUpdate} />}
+            initialNumToRender={15}   // how many item to display first
+            onEndReachedThreshold={0.5} // so when you are at 5 pixel from the bottom react run onEndReached function
+            ListHeaderComponent ={
+              <View>
+              <Text>Pickup Seller</Text>
+              <Divider
+                  style={{margin: 5 }}
+                  color="red"
+                  width={2}
+                  orientation="horizontal"
+                />
+              </View>
+              }
+              stickyHeaderIndices={[0]}
+              onEndReached={() => {
+                getMore();
+              }}
+              ListFooterComponent={
+                <View>
+                {
+                loadingmore &&
+                [{}].map((l, i) => (
+                  <Skeleton
+                  // LinearGradientComponent={LinearGradient}
+                  animation="pulse"
+                  width={'100%'}
+                  height={60}
+                  style={{ marginBottom:5 }}
+                  key={i}
+                />
+                  ))} 
+                {
+                  bigdata.length == 0 && !loading &&
+                  <View style={{ backgroundColor:'white' }}>
+                      <Text>No Data Found</Text>
+                  </View>
+                }
+                {
+                  loading &&
+                  <View style={{ flex:1, flexDirection:'column' }}>
+                    {
+                      [{},{},{},{},{},{}].map((l, i) => (
+                        <Skeleton
+                        // LinearGradientComponent={LinearGradient}
+                        animation="pulse"
+                        width={'100%'}
+                        height={60}
+                        style={{ marginBottom:5 }}
+                        key={i}
+                      />
+                        ))
+                    }
+                  </View>
+                  
+                }
+                {
+                  loadingHttp && 
+                  <Dialog isVisible={loadingHttp} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
+                    <Dialog.Loading />
+                  </Dialog>
+                }
                 </View>
-                
               }
-              {
-                bigdata.length == 0 && !loading &&
-                <Text>No Data Found</Text>
-              }
-              {
-                loadingHttp && 
-                <Dialog isVisible={loadingHttp} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
-                  <Dialog.Loading />
-                </Dialog>
-              }
-              {
-                bigdata.map((l, i) => (
-                    <AccordionPickUp data={ l } onPressUpdate ={onPressUpdate} key={i} />
-                ))
-              }
-            </ScrollView>
+          />
+            </View>
 
           <Footer  />
         </SafeAreaView>
@@ -207,7 +260,8 @@ const styles = StyleSheet.create({
     fontWeight:'bold'
   },
   listContainer : {
-    height:'70%',
+    // height:'70%',
+    flex:12,
     paddingHorizontal:10
   },
   datepickContainer : { 
