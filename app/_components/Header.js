@@ -10,7 +10,7 @@ import axios from 'axios';
 
 const Header = (props) => {
 
-  const [title, setTitle] = useState((props.title) ? props.title : 'kirimdisini'  );
+  const [title, setTitle] = useState((props.title) ? props.title : 'Ican Express'  );
   const [name, setName] = useState('Loading ...');
   const [token, setToken] = useState('');
   const [popupLogout, setPopupLogout] = useState(false);
@@ -92,6 +92,7 @@ return (
       centerComponent={{}}
       backgroundColor = '#ff0000'
       placement = 'left'
+      containerStyle={{ flex:1, marginBottom:5 }}
     />
     <Dialog
       isVisible={popupLogout}

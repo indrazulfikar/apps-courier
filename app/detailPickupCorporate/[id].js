@@ -1,9 +1,9 @@
-import { StyleSheet, Text, SafeAreaView, View, ScrollView} from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, ScrollView, FlatList} from 'react-native';
 import Header from '../_components/Header';
 import Footer from '../_components/Footer';
 import { useState, useEffect } from 'react';
 import AccordionPickUpCorporate from '../_components/AccordionPickUpCorporate';
-import { Skeleton, Dialog } from '@rneui/themed';
+import { Skeleton, Dialog, Divider } from '@rneui/themed';
 import { useLocalSearchParams, router } from 'expo-router';
 import CanvasCamera from '../_components/CanvasCamera';
 import { HostUri } from '../_components/HostUri';
@@ -22,6 +22,11 @@ export default function detailListPickupCorporate() {
     const [startCamera, setStartCamera] = useState(false);
     const [showReceipt, setShowReceipt] = useState(false);
     const [imgUri, setImgUri] = useState('');
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [lastPage, setLastPage] = useState(1);
+    const [total, setTotal] = useState(0);
+    const [loadingmore, setLoadingmore]= useState(false);
 
     const [returnData, setReturnData] = useState({
       order_corporate_id : '',
@@ -43,11 +48,19 @@ export default function detailListPickupCorporate() {
         getData();
     }, []);
 
+    const getMore = () => {
+      if(currentPage < lastPage){
+        setLoadingmore(true);
+        setCurrentPage(currentPage+1);
+        getData()
+      }
+    }
+
     const getData = async () => {
     await SecureStore.getItemAsync('secured_token').then((token) => {
       axios({
         method: "get",
-        url: HostUri+`pickup/corporate/${id}`,
+        url: HostUri+`pickup/corporate/${id}?page=`+currentPage,
         headers: {
           "Content-Type": 'application/json',
           "Authorization" : `Bearer ${token}`,
@@ -55,10 +68,20 @@ export default function detailListPickupCorporate() {
       }).then(function (response) {
           // berhasil
           setLoading(false);
-          setBigData(response.data.data);
+          setLoadingmore(false);
+          // setData(response.data.data.data);
+          // console.log(response.data.data.data)
+          if(currentPage == 1){
+            setBigData(response.data.data.data)
+          }else{
+            setBigData([...bigdata, ...response.data.data.data]);
+          }
+          setLastPage(response.data.data.last_page);
+          setTotal(response.data.data.total)
         }).catch(function (error) {
           // masuk ke server tapi return error (unautorized dll)
           if (error.response) {
+          setLoadingmore(false);
           setLoading(false);
           //gagal login
           if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
@@ -72,12 +95,14 @@ export default function detailListPickupCorporate() {
             // console.error(error.response.headers);
           } else if (error.request) {
             // ga konek ke server
-            setLoading(false);
+          setLoadingmore(false);
+          setLoading(false);
             alert('Check Koneksi anda !')
             console.error(error.request);
           } else {
             // error yang ga di sangka2
-            setLoading(false);
+          setLoadingmore(false);
+          setLoading(false);
             console.error("Error", error.message);
           }
       });
@@ -134,7 +159,7 @@ export default function detailListPickupCorporate() {
          const manipResult = await ImageManipulator.manipulateAsync(
            img,
            [],
-           { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
+           { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
          ); 
          let filename = manipResult.uri.split('/').pop();
          let match = /\.(\w+)$/.exec(filename);
@@ -248,17 +273,33 @@ export default function detailListPickupCorporate() {
           }
           {!startCamera && !showReceipt &&
             (
-            <ScrollView >
-            {
-              bigdata.length == 0 && !loading &&
-              <Text>No Data Found</Text>
-            }
-            
-            {
-                loading &&
-                <View style={{ flex:1, flexDirection:'column', padding:5 }}>
-                  {
-                    [{},{},{},{},{},{},].map((l, i) => (
+            <View>
+              <FlatList               
+                data={bigdata}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) =>  <AccordionPickUpCorporate data={ item } onPressUpdate ={onPressUpdate}reasonList = {reasonList} />}
+                initialNumToRender={15}   // how many item to display first
+                onEndReachedThreshold={0.5} // so when you are at 5 pixel from the bottom react run onEndReached function
+                ListHeaderComponent ={
+                  <View>
+                  <Text>Pickup Corporate</Text>
+                  <Divider
+                      style={{margin: 5 }}
+                      color="red"
+                      width={2}
+                      orientation="horizontal"
+                    />
+                  </View>
+                  }
+                  stickyHeaderIndices={[0]}
+                  onEndReached={() => {
+                    getMore();
+                  }}
+                  ListFooterComponent={
+                    <View>
+                    {
+                    loadingmore &&
+                    [{}].map((l, i) => (
                       <Skeleton
                       // LinearGradientComponent={LinearGradient}
                       animation="pulse"
@@ -267,17 +308,41 @@ export default function detailListPickupCorporate() {
                       style={{ marginBottom:5 }}
                       key={i}
                     />
-                      ))
+                      ))} 
+                    {
+                      bigdata.length == 0 && !loading &&
+                      <View style={{ backgroundColor:'white' }}>
+                          <Text>No Data Found</Text>
+                      </View>
+                    }
+                    {
+                      loading &&
+                      <View style={{ flex:1, flexDirection:'column' }}>
+                        {
+                          [{},{},{},{},{},{}].map((l, i) => (
+                            <Skeleton
+                            // LinearGradientComponent={LinearGradient}
+                            animation="pulse"
+                            width={'100%'}
+                            height={60}
+                            style={{ marginBottom:5 }}
+                            key={i}
+                          />
+                            ))
+                        }
+                      </View>
+                      
+                    }
+                    {
+                      loadingHttp && 
+                      <Dialog isVisible={loadingHttp} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
+                        <Dialog.Loading />
+                      </Dialog>
+                    }
+                    </View>
                   }
-                </View>
-                
-              }
-              {
-                bigdata.map((l, i) => (
-                    <AccordionPickUpCorporate data={ l } onPressUpdate ={onPressUpdate} key={i} reasonList = {reasonList} />
-                ))
-              }
-            </ScrollView>
+              />
+            </View>
             )}
               </View>
             <View>
@@ -294,8 +359,8 @@ const styles = StyleSheet.create({
     flexDirection:'column',
   },
   headerContainer : {
-    // height:'10%'
-    flex:1
+    height:'10%'
+    // flex:1
   },
   listContainer : {
     // height:'70%',

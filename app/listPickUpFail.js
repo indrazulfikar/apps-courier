@@ -1,4 +1,4 @@
-import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView} from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView, FlatList} from 'react-native';
 import { ListItem, Divider, Skeleton } from '@rneui/themed';
 import { router, Link } from "expo-router";
 import Header from './_components/Header';
@@ -17,16 +17,30 @@ export default function listPickUpFail() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [err, setErr] = useState('Disconnected Please Check your Connection !');
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loadingmore, setLoadingmore]= useState(false);
+
   
   useEffect(() => {
     getData();
   }, []);
 
+  const getMore = () => {
+    if(currentPage < lastPage){
+      setLoadingmore(true);
+      setCurrentPage(currentPage+1);
+      getData()
+    }
+  }
+
   const getData = async () => {
     await SecureStore.getItemAsync('secured_token').then((token) => {
       axios({
         method: "get",
-        url: HostUri+'pickup/fail',
+        url: HostUri+'pickup/fail?page='+currentPage,
         headers: {
           "Content-Type": 'application/json',
           "Authorization" : `Bearer ${token}`,
@@ -34,11 +48,21 @@ export default function listPickUpFail() {
       }).then(function (response) {
           // berhasil
           setLoading(false);
-          setData(response.data.data);
+          setLoadingmore(false);
+          // setData(response.data.data.data);
+          // console.log(response.data.data.data)
+          if(currentPage == 1){
+            setData(response.data.data.data)
+          }else{
+            setData([...data, ...response.data.data.data]);
+          }
+          setLastPage(response.data.data.last_page);
+          setTotal(response.data.data.total)
         }).catch(function (error) {
           // masuk ke server tapi return error (unautorized dll)
           if (error.response) {
           setLoading(false);
+          setLoadingmore(false);
           //gagal login
           if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
             {
@@ -51,11 +75,13 @@ export default function listPickUpFail() {
             // console.error(error.response.headers);
           } else if (error.request) {
           setLoading(false);
+          setLoadingmore(false);
           // ga konek ke server
             alert('Check Koneksi anda !')
             console.error(error.request);
           } else {
           setLoading(false);
+          setLoadingmore(false);
           // error yang ga di sangka2
             console.error("Error", error.message);
           }
@@ -79,42 +105,67 @@ export default function listPickUpFail() {
             <CustomDatePick />
           </View>
         </View>
-
-        <Divider
-          style={{marginHorizontal: 5 }}
-          color="red"
-          width={2}
-          orientation="horizontal"
-        />
-          <ScrollView style={styles.listContainer}>
-          {
-            loading &&
-            <View style={{ flex:1, flexDirection:'column', padding:10 }}>
+        <View style={styles.listContainer}>
+        <FlatList               
+          data={data}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) =>  <AccordionPickUp data={ item } />}
+          initialNumToRender={15}   // how many item to display first
+          onEndReachedThreshold={0.5} // so when you are at 5 pixel from the bottom react run onEndReached function
+          ListHeaderComponent ={
+            <Divider
+                style={{margin: 5 }}
+                color="red"
+                width={2}
+                orientation="horizontal"
+              />
+            }
+            stickyHeaderIndices={[0]}
+            onEndReached={() => {
+              getMore();
+            }}
+            ListFooterComponent={
+              <View>
               {
-                [{},{},{},{},{},{},].map((l, i) => (
-                  <Skeleton
-                  // LinearGradientComponent={LinearGradient}
-                  animation="pulse"
-                  width={'100%'}
-                  height={60}
-                  style={{ marginBottom:5 }}
-                  key={i}
-                />
-                  ))
+              loadingmore &&
+              [{}].map((l, i) => (
+                <Skeleton
+                // LinearGradientComponent={LinearGradient}
+                animation="pulse"
+                width={'100%'}
+                height={60}
+                style={{ marginBottom:5 }}
+                key={i}
+              />
+                ))} 
+              {
+                data.length == 0 && !loading &&
+                <View style={{ backgroundColor:'white' }}>
+                    <Text>No Data Found</Text>
+                </View>
               }
-            </View>
-            
-          }
-          {
-            data.length == 0 && !loading &&
-            <Text>No Data Found</Text>
-          }
-          { !loading &&
-            data.map((l, i) => (
-              <AccordionPickUp data={ l } key={i} />
-            ))
-          }
-          </ScrollView>
+              {
+                loading &&
+                <View style={{ flex:1, flexDirection:'column' }}>
+                  {
+                    [{},{},{},{},{},{}].map((l, i) => (
+                      <Skeleton
+                      // LinearGradientComponent={LinearGradient}
+                      animation="pulse"
+                      width={'100%'}
+                      height={60}
+                      style={{ marginBottom:5 }}
+                      key={i}
+                    />
+                      ))
+                  }
+                </View>
+                
+              }
+              </View>
+            }
+        />
+        </View>
         <Footer  />
       </SafeAreaView>
     )
@@ -156,8 +207,9 @@ const styles = StyleSheet.create({
     fontWeight:'bold'
   },
   listContainer : {
-    height:'70%',
-    paddingHorizontal:10
+    // height:'70%',
+    flex:12,
+    paddingHorizontal:5
   },
   tableHead :{
     fontSize:12,

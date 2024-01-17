@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
-import { ListItem, Dialog, CheckBox } from '@rneui/themed';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Linking } from 'react-native';
+import { ListItem, Dialog, CheckBox, Overlay } from '@rneui/themed';
 import {SelectList} from 'react-native-dropdown-select-list';
+import ShowPickUpReceipt from './ShowPickUpReceipt';
 
 const AccordionPickUpCorporate = (props) => {
     const [expanded, setExpanded] = useState(false);
@@ -9,6 +10,7 @@ const AccordionPickUpCorporate = (props) => {
     const [checked, setChecked] = useState(1);
     const [selected, setSelected] = useState(1);
     const [reasonText, setReasonText] = useState('');
+    const [showRecept, setShowRecept] = useState(false);
    
     const onPressUpdate = props.onPressUpdate;
     const reasonList = props.reasonList;
@@ -23,10 +25,19 @@ const AccordionPickUpCorporate = (props) => {
       setShowModal(!showModal);
     };
 
+    const toggleReceipt = () => {
+      setShowRecept(!showRecept);
+    }
+
     const updateHandler = (order_corporate_id, name, count, weight) => {
       onPressUpdate(order_corporate_id, selected, '', checked, reasonText, name, count, weight );
       setShowModal(!showModal);
       resetChoice();
+    }
+
+    const resetChecked = () => {
+      setReasonText('');
+      setChecked(1);
     }
 
     const resetChoice = () =>{
@@ -68,11 +79,10 @@ const AccordionPickUpCorporate = (props) => {
                       data.order_corporate_weight && <Text>Estimasi Berat : {data.order_corporate_weight} gram</Text>
                     }
                     {data.telp && <Text>Telp. {data.telp}</Text>}
-                    {data.shipping_product_weight && <Text>Berat : {data.shipping_product_weight} gram</Text>}
-                    {data.shipping_status == 'pickedup' && <Text>Status : Pickup Success</Text>}
-                    {data.shipping_status == 'miss route' && <Text>Status : {data.reason.shipping_history_desc}</Text>}
+                    {data.order_corporate_status == 'picked up' && <Text>Status : Pickup Success</Text>}
+                    {data.order_corporate_status == 'cancel' && <Text>Status : {data.order_corporate_reason}</Text>}
                  </View>
-                {( data.shipping_status != 'picked up' && data.shipping_status != 'miss route')  && (<View><TouchableOpacity><Text onPress={toggleModal} style={{ color:'blue',  fontWeight:'bold' }}>Update</Text></TouchableOpacity></View>)}
+                {( data.order_corporate_status != 'picked up')  && (<View><TouchableOpacity><Text onPress={toggleModal} style={{ color:'blue',  fontWeight:'bold' }}>Update</Text></TouchableOpacity></View>)}
                 
            <Dialog
               isVisible={showModal}
@@ -80,7 +90,7 @@ const AccordionPickUpCorporate = (props) => {
             >
           <Dialog.Title title=""/>
           <SelectList 
-                setSelected={(val) => {setSelected(val)}} 
+                setSelected={(val) => {resetChecked;setSelected(val)}} 
                 data={choice} 
                 save="key"
                 placeholder='Pickup Sukses'
@@ -144,11 +154,32 @@ const AccordionPickUpCorporate = (props) => {
          
           </Dialog>
             </View>
+            { (data.order_corporate_status != 'picked up') &&
+              (
             <View style={styles.buttongroup}>
                 <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>WA Call</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>WA Chat</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }} onPress={()=>{Linking.openURL(`http://api.whatsapp.com/send?phone=${data.telp.replace(data.telp[0], '+62')}`)}}>WA Chat</Text></TouchableOpacity>
                 <TouchableOpacity style={styles.button}><Text style={{ color:'white', textAlign : 'center' }}>Navigasi</Text></TouchableOpacity>
             </View>
+            )
+          }
+          { (data.order_corporate_status == 'picked up') &&
+              (
+            <View style={styles.buttongroup}>
+                <TouchableOpacity style={styles.button} onPress={()=>{toggleReceipt()}}><Text style={{ color:'white', textAlign : 'center' }}>Lihat Tanda Terima</Text></TouchableOpacity>
+            </View>
+            )
+          }
+          <Overlay isVisible={showRecept} onBackdropPress={()=>{toggleReceipt()}}>
+          <ShowPickUpReceipt 
+          sender = {data.company_name}
+          total = {data.order_corporate_count}
+          weight = {data.order_corporate_weight}
+          img = {data.order_corporate_img}
+          name = {data.order_corporate_submiter}
+          hp = {data.order_corporate_submiter_phone}
+          />
+        </Overlay>
           </ListItem.Content>
         </ListItem>
       </ListItem.Accordion>

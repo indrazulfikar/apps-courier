@@ -1,7 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { router } from "expo-router";
-import { Divider, Dialog } from '@rneui/themed';
+import { Divider, Dialog, Icon } from '@rneui/themed';
 import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity} from "react-native";
 import { HostUri } from "./_components/HostUri";
 import * as SecureStore from 'expo-secure-store';
@@ -12,6 +12,11 @@ export default function index() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const toggleShowPassword = () => { 
+    setShowPassword(!showPassword); 
+  }; 
 
   useEffect(() => {
     async function getValueFor(key) {
@@ -99,9 +104,10 @@ export default function index() {
           style={styles.TextInput}
           placeholder="Password."
           placeholderTextColor="#003f5c"
-          secureTextEntry={true}
+          secureTextEntry={!showPassword}
           onChangeText={(password) => setPassword(password)}
         />
+        <Icon type="entypo" name={showPassword ? 'eye' : 'eye-with-line'} color="grey" size={20} style={{ marginRight:20 }} onPress={()=>{toggleShowPassword()}}/>
       </View>
 
       <TouchableOpacity style={styles.loginBtn} onPress={()=>{loginHandler()}}>
@@ -141,6 +147,8 @@ const styles = StyleSheet.create({
   },
 
   inputView: {
+    // flex: 1,
+    flexDirection: "row",
     backgroundColor: "white",
     borderRadius: 10,
     width: "80%",

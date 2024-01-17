@@ -1,4 +1,4 @@
-import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView} from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, TouchableOpacity, ScrollView, FlatList} from 'react-native';
 import { ListItem, Divider, Skeleton } from '@rneui/themed';
 import Header from './_components/Header';
 import Footer from './_components/Footer';
@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { HostUri } from './_components/HostUri';
 import AccordionDelivery from './_components/AccordionDelivery'
 import * as SecureStore from 'expo-secure-store';
+import { router } from "expo-router";
 import axios from 'axios';
 
 export default function listDeliveryFail() {
@@ -14,15 +15,28 @@ export default function listDeliveryFail() {
   const [data, setData] = useState([]);
   const [err, setErr] = useState('Disconnected Please Check your Connection !');
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loadingmore, setLoadingmore]= useState(false);
+
       useEffect(() => {
         getData();
       }, []);
+
+      const getMore = () => {
+        if(currentPage < lastPage){
+          setLoadingmore(true);
+          setCurrentPage(currentPage+1);
+          getData()
+        }
+      }
 
       const getData = async () => {
         await SecureStore.getItemAsync('secured_token').then((token) => {
           axios({
             method: "get",
-            url: HostUri+'delivery/fail',
+            url: HostUri+'delivery/fail?page='+currentPage,
             headers: {
               "Content-Type": 'application/json',
               "Authorization" : `Bearer ${token}`,
@@ -30,9 +44,19 @@ export default function listDeliveryFail() {
           }).then(function (response) {
               // berhasil
               setLoading(false);
-              setData(response.data.data);
+              setLoadingmore(false);
+              // setData(response.data.data.data);
+              // console.log(response.data.data.data)
+              if(currentPage == 1){
+                setData(response.data.data.data)
+              }else{
+                setData([...data, ...response.data.data.data]);
+              }
+              setLastPage(response.data.data.last_page);
+              setTotal(response.data.data.total)
             }).catch(function (error) {
               // masuk ke server tapi return error (unautorized dll)
+              setLoadingmore(false);
               setLoading(false);
               if (error.response) {
                 //gagal login
@@ -47,11 +71,13 @@ export default function listDeliveryFail() {
                 // console.error(error.response.headers);
               } else if (error.request) {
                 // ga konek ke server
-                setLoading(false);
+              setLoadingmore(false);
+              setLoading(false);
                 alert('Check Koneksi anda !')
                 console.error(error.request);
               } else {
-                setLoading(false);
+              setLoadingmore(false);
+              setLoading(false);
                 // error yang ga di sangka2
                 console.error("Error", error.message);
               }
@@ -67,63 +93,75 @@ export default function listDeliveryFail() {
         </View>
 
         <View style={styles.datepickContainer}>
-          <View style={{ margin:10 }}>
+          <View>
             <CustomDatePick />
           </View>
           <View>
             <CustomDatePick />
           </View>
         </View>
-
-        <Divider
-          style={{margin: 5 }}
-          color="red"
-          width={2}
-          orientation="horizontal"
-        />
-
-        <ScrollView style={styles.listContainer}>
-          {
-            loading &&
-            <View style={{ flex:1, flexDirection:'column', padding:10 }}>
-              {
-                [{},{},{},{},{},{},].map((l, i) => (
-                  <Skeleton
-                  // LinearGradientComponent={LinearGradient}
-                  animation="pulse"
-                  width={'100%'}
-                  height={60}
-                  style={{ marginBottom:5 }}
-                  key={i}
-                />
-                  ))
-              }
-            </View>
-            
+        
+        <View style={styles.listContainer}>
+        <FlatList               
+        data={data}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item }) =>  <AccordionDelivery data={ item } />}
+        initialNumToRender={15}   // how many item to display first
+        onEndReachedThreshold={0.5} // so when you are at 5 pixel from the bottom react run onEndReached function
+        ListHeaderComponent ={
+          <Divider
+              style={{margin: 5 }}
+              color="red"
+              width={2}
+              orientation="horizontal"
+            />
           }
-          {
-            data.length == 0 && !loading &&
-            <Text>No Data Found</Text>
-          }
-            { !loading &&
-              data.map((l, i) => (
-                <AccordionDelivery data={ l } key={l.shipping_awb}/>
-                // <ListItem key={i} bottomDivider Component={View}>
-                //   <ListItem.Content>
-                //     <ListItem.Subtitle><Text style={styles.tableHead}>AWB</Text></ListItem.Subtitle>
-                //     <ListItem.Title><Text style={{ fontWeight:'bold' }}>{l.shipping_awb}</Text></ListItem.Title>
-                //     <ListItem.Subtitle><Text style={styles.tableHead}>Alasan</Text></ListItem.Subtitle>
-                //     <ListItem.Title>{l.reason}</ListItem.Title>
-                //   </ListItem.Content>
-                //   <ListItem.Content right>
-                //     <ListItem.Subtitle><Text style={styles.tableHead}>Status</Text></ListItem.Subtitle>
-                //     <ListItem.Title><Text style={{ color:'red' }}>{l.shipping_status}</Text></ListItem.Title>
-                //     <ListItem.Subtitle ><TouchableOpacity><Text style={{ color:'blue' }}>Update</Text></TouchableOpacity></ListItem.Subtitle>
-                //   </ListItem.Content>
-                // </ListItem>
-              ))
+          stickyHeaderIndices={[0]}
+          onEndReached={() => {
+            getMore();
+          }}
+          ListFooterComponent={
+            <View>
+            {
+            loadingmore &&
+            [{}].map((l, i) => (
+              <Skeleton
+              // LinearGradientComponent={LinearGradient}
+              animation="pulse"
+              width={'100%'}
+              height={60}
+              style={{ marginBottom:5 }}
+              key={i}
+            />
+              ))} 
+            {
+              data.length == 0 && !loading &&
+              <View style={{ backgroundColor:'white' }}>
+                  <Text>No Data Found</Text>
+              </View>
             }
-          </ScrollView>
+            {
+              loading &&
+              <View style={{ flex:1, flexDirection:'column' }}>
+                {
+                  [{},{},{},{},{},{}].map((l, i) => (
+                    <Skeleton
+                    // LinearGradientComponent={LinearGradient}
+                    animation="pulse"
+                    width={'100%'}
+                    height={60}
+                    style={{ marginBottom:5 }}
+                    key={i}
+                  />
+                    ))
+                }
+              </View>
+              
+            }
+            </View>
+          }
+      />
+        </View>
 
         <Footer  />
       </SafeAreaView>
@@ -137,7 +175,8 @@ const styles = StyleSheet.create({
     flexDirection:'column',
   },
   headerContainer : {
-    height:'8%'
+    // flex:2,
+    height:'10%'
   },
   headerChild : {
     flex: 1,
@@ -152,7 +191,7 @@ const styles = StyleSheet.create({
     flex:1
   },
   datepickContainer : { 
-    height:'8%',
+    height:'10%',
     flexDirection : 'row', 
     alignItems: "center", 
     justifyContent: "space-evenly" 
@@ -166,7 +205,8 @@ const styles = StyleSheet.create({
     fontWeight:'bold'
   },
   listContainer : {
-    height:'74%'
+    // height:'74%'
+    flex:12
   },
   tableHead :{
     fontSize:12,
