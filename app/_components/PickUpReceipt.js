@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {View, StyleSheet, Text, TextInput, Button, TouchableOpacity, Image} from 'react-native';
+import {View, StyleSheet, Text, TextInput, TouchableOpacity, Image,  SafeAreaView, KeyboardAvoidingView } from 'react-native';
 
 const PickUpReceipt = (props) => {
 
@@ -14,10 +14,10 @@ const PickUpReceipt = (props) => {
     const [hp, setHp] = useState('');
 
     return(
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <View style={styles.box}>
                 <View style={{ flex:1, padding:20 }}>
-                    <View style={{ flex:1 }}>
+                    <View style={{ flex:0.5 }}>
                         <Text style={{ flex : 1, textAlign:'center', textAlignVertical:'center', fontWeight:'bold' }}>TANDA TERIMA PICKUP</Text>
                     </View>
                     <View style={{ flex:1 }}>
@@ -48,8 +48,8 @@ const PickUpReceipt = (props) => {
                         />
                     </View>
 
-                    <View style={{ flex:2, flexDirection:'row' }}>
-                        <View style={{ flex:3 }}>
+                    <KeyboardAvoidingView behavior='padding' style={{ flex:2, flexDirection:'row' }}>
+                        <View style={{ flex:1 }}>
                             <View>
                                 <Text>Diserahkan Oleh :</Text>
                                 <TextInput style={styles.inputMerah } onChangeText={(val)=>setName(val)}/>
@@ -59,7 +59,7 @@ const PickUpReceipt = (props) => {
                                 <TextInput style={styles.inputMerah } onChangeText={(val)=>setHp(val)} keyboardType='numeric'/>
                             </View>
                         </View>
-                    </View>
+                    </KeyboardAvoidingView>
                     <View style={{ flex:0.5, flexDirection:'row' }}>
                         <TouchableOpacity style={styles.buttonMerah} onPress={()=>onCreate(name, hp)}>
                             <Text style={{ flex:1, textAlign:'center', textAlignVertical:'center', fontWeight:'bold', color:'white'}}>Buat Tanda Terima</Text>
@@ -70,7 +70,7 @@ const PickUpReceipt = (props) => {
                     </View>
                 </View>
             </View>
-        </View>
+        </SafeAreaView>
     )
 
 }

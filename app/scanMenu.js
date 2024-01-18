@@ -7,6 +7,7 @@ import { Icon, Dialog } from '@rneui/themed';
 import { HostUri } from './_components/HostUri';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 //images
 import scangagalpickup from '../assets/scangagalpickup.png';
@@ -21,6 +22,8 @@ import refunddc from '../assets/refunddc.png';
 import kurirrefund from '../assets/kurirrefund.png';
 import refundfinish from '../assets/refundfinish.png';
 import refundtake from '../assets/refundtake.png';
+import CanvasCamera from './_components/CanvasCamera';
+import { TextInput } from 'react-native-gesture-handler';
 
 export default function scanMenu() {
     
@@ -32,6 +35,24 @@ export default function scanMenu() {
     const [alasan, setAlasan] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const [startCamera, setStartCamera] = useState(false);
+    const [showReceipt, setShowReceipt] = useState(false);
+    const [imgUri, setImgUri] = useState('');
+    const [name, setName] = useState('');
+
+    const resetAll = () =>{
+      setScanned(false);
+      setChoice(null);
+      setOpenScanner(false);
+      setAwb(null);
+      setAlasan('');
+      setLoading(false);
+      setStartCamera(false);
+      setShowReceipt(false);
+      setImgUri('');
+      setName('');
+    }
+
     const menuButton = [
       { name : 'Gagal PickUp', code: '3', img : scangagalpickup},
       { name : 'Pickup Sukses', code: '4', img : scansuccesspickup},
@@ -40,7 +61,7 @@ export default function scanMenu() {
       { name : 'Sampai DC', code: '7', img : terimadc},
       { name : 'Dikirim Kurir', code: '8', img : dikirimkurir},
       { name : 'Selesai', code: '9', img : selesai},
-      { name : 'Pending',code: '19', img : pending},
+      { name : 'Pending',code: '10', img : pending},
       { name : 'Call Attempt 2', code: '11', img : motormini},
       { name : 'Call Attempt 3', code: '12', img : motormini},
       { name : 'Gagal', code: '13', img : gagal},
@@ -74,7 +95,8 @@ export default function scanMenu() {
             },
             {
               text : 'Save',
-              onPress: () => updateAwb(data,choice, alasan),
+              // onPress: () => updateAwb(data,choice, alasan),
+              onPress: () => handlerUpdateAwb(data),
               style : 'default'
             }
           ],
@@ -86,7 +108,6 @@ export default function scanMenu() {
     };
 
     const handlerChoice = (number) => {
-        let needAlasan = [];
         setChoice(number);
         setOpenScanner(true);
     }
@@ -98,22 +119,51 @@ export default function scanMenu() {
         return <Text>No access to camera, please give access to camera !</Text>;
     }
 
-    const updateAwb = async(awb, code, alasan = '')=>
+    const handlerUpdateAwb = (data) => {
+      if(['9', '17', '18'].includes(choice)){
+        setShowReceipt(true);
+      }else{
+        updateAwb(data);
+      }
+    }
+
+    const returnImage = (uri) =>
+    {
+      setStartCamera(false);
+      updateAwb(awb, uri.uri);
+    }
+
+    const receiptHandler = () =>{
+      setShowReceipt(false);
+      setStartCamera(true);
+    }
+
+    const updateAwb = async(awb, img= '')=>
     {
       setLoading(true);
+       let formData = new FormData();
+       formData.append('awb', awb);
+       formData.append('selected_tracking', choice);
+       formData.append('alasan', alasan);
+       formData.append('name', name);
+       if(img != ''){
+         const manipResult = await ImageManipulator.manipulateAsync(
+           img,
+           [],
+           { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+         ); 
+         let filename = manipResult.uri.split('/').pop();
+         let match = /\.(\w+)$/.exec(filename);
+         let type = match ? `image/${match[1]}` : `image`;
+         formData.append('img', { uri: manipResult.uri, name: filename, type });
+       }
       await SecureStore.getItemAsync('secured_token').then((token) => {
+        let optHeader = { "Content-Type": 'multipart/form-data', "Authorization" : `Bearer ${token}`} ;
         axios({
           method: "post",
           url: HostUri+'scan',
-          headers: {
-            "Content-Type": 'application/json',
-            "Authorization" : `Bearer ${token}`,
-          },
-          data :{
-            awb: awb,
-            selected_tracking: code,
-            alasan : alasan
-          }
+          headers: optHeader,
+          data :formData
         }).then(function (response) {
             // berhasil
             setLoading(false);
@@ -156,6 +206,8 @@ export default function scanMenu() {
                     cancelable: true,
                   },
                 );
+              }else{
+                alert('Gagal '+menuButton.find(x => x.code === choice).name+'('+error.response.data.message+')')
               }
               // console.error(error.response.data);
               // console.error(error.response.status);
@@ -183,30 +235,36 @@ export default function scanMenu() {
           <Dialog.Loading />
         </Dialog>
       }
-        {
-            openScanner &&
-            <BarCodeScanner
-            onBarCodeScanned={handleBarCodeScanned}
-            style={StyleSheet.absoluteFillObject}
-            >
-            <View
-                style={{
-                  flex: 1,
-                  backgroundColor: 'transparent',
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-              <Icon type='material-community' name="scan-helper" color="#fff" size={250}/> 
-            </View>
-            </BarCodeScanner>
-         
-        }
         <View style={styles.headerContainer}>
             <Header title="SCAN AWB"/>
         </View>
-        { ! openScanner &&
-            <View style={{flex:10 }}>
+        
+        <View style={{flex:10 }}>
+        {
+          openScanner &&
+          <BarCodeScanner
+          onBarCodeScanned={handleBarCodeScanned}
+          style={StyleSheet.absoluteFillObject}
+          >
+          <View
+              style={{
+                flex: 1,
+                backgroundColor: 'transparent',
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+            <Icon type='material-community' name="scan-helper" color="#fff" size={250}/> 
+          </View>
+          </BarCodeScanner>
+       
+      }
+        
+      {
+          startCamera &&
+          <CanvasCamera startCamera={startCamera} returnImage = {returnImage}/>
+      }
+        { !openScanner && !startCamera &&
           <ScrollView contentContainerStyle={{ flexDirection:'row', flexWrap:'wrap', justifyContent:'space-evenly', alignItems:'flex-start', padding:10  }}>
             {  
               menuButton.map((l, i) => (
@@ -217,8 +275,24 @@ export default function scanMenu() {
               ))
             }
         </ScrollView>
-        </View>
         }
+        
+        </View>
+        <Dialog isVisible={showReceipt} onBackdropPress={()=> {resetAll();}}>
+
+          <Dialog.Title title=""/>
+              <View style={{ padding:10 }}>
+                <Text>Diterima Oleh :</Text>
+                <View style={styles.inputView}>
+              <TextInput onChangeText={(val)=>setName(val)} style={styles.input}/>
+              </View>
+                <TouchableOpacity onPress={()=>{ receiptHandler()}}>
+                <View style={{ borderColor:'white', backgroundColor:'red', borderWidth:2, borderRadius : 10, padding:10, alignItems:'center'}}>
+                  <Text style={{ color:"white", fontWeight:'bold' }}>Update dan Ambil Foto</Text>
+                </View>
+              </TouchableOpacity>
+              </View>        
+          </Dialog>
         <Footer  />
     </SafeAreaView>
     );
@@ -252,5 +326,20 @@ export default function scanMenu() {
       height:45,
       textAlign:'center'
     },
+    
+    inputView: {
+      backgroundColor: "white",
+      borderRadius: 10,
+      marginTop:5,
+      marginBottom: 20,
+      borderWidth:1,
+      borderColor:'red',
+      height:50,
+    },
+    input : {
+      height:50,
+      textAlign:'left',
+      paddingLeft:10
+    }
   });
   

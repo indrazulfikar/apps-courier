@@ -1,18 +1,22 @@
 import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Dimensions, TextInput } from 'react-native';
 import { useEffect, useState } from 'react';
-import { Icon, ListItem, Divider, Skeleton } from '@rneui/themed';
+import { Icon, ListItem, Divider, Skeleton, Dialog } from '@rneui/themed';
 import { HostUri, HostRef } from './_components/HostUri';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import Footer from './_components/Footer';
 import Header from './_components/Header';
 import * as Clipboard from 'expo-clipboard';
-
+import {expo} from '../app.json'
+import { router } from 'expo-router';
 
 export default profile = () => {
 
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [popupLogout, setPopupLogout] = useState(false);
+    const [httpLoading, setHttpLoading] = useState(false);
+    
 
     const copyHandler = async (referal) => {
         await Clipboard.setStringAsync(referal).then(()=>{
@@ -64,12 +68,74 @@ export default profile = () => {
           });
         });
     }
+    toggleLogout = () =>
+    {
+      setPopupLogout(!popupLogout);
+    }
+  
+    async function del(key) {
+      await SecureStore.deleteItemAsync(key);
+    }
+  
+    const logoutHandler = async () =>
+    {
+        setHttpLoading(true);
+        await SecureStore.getItemAsync('secured_token').then((token) => {
+      axios({
+        method: "get",
+        url: HostUri+'logout',
+        headers: {
+          "Content-Type": 'application/json',
+          "Authorization" : `Bearer ${token}`,
+        },
+      }).then(function (response) {
+        setHttpLoading(false);
+        // berhasil
+          del('secured_token');
+          del('secured_name');
+          router.replace('/');
+        }).catch(function (error) {
+          // masuk ke server tapi return error (unautorized dll)
+          if (error.response) {
+            //gagal login
+        setHttpLoading(false);
+
+            if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
+            {
+              SecureStore.deleteItemAsync('secured_token');
+              SecureStore.deleteItemAsync('secured_name');
+              router.replace('/');
+            }
+            // console.error(error.response.data);
+            // console.error(error.response.status);
+            // console.error(error.response.headers);
+          } else if (error.request) {
+            // ga konek ke server
+        setHttpLoading(false);
+
+            alert('Check Koneksi anda !')
+            console.error(error.request);
+          } else {
+        setHttpLoading(false);
+
+            // error yang ga di sangka2
+            console.error("Error", error.message);
+          }
+      });
+    });
+    }
 
 
     return(
         <SafeAreaView style={styles.container}>
+        {
+            httpLoading &&
+            <Dialog isVisible={httpLoading} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
+                <Dialog.Loading />
+            </Dialog>
+        }
             <View style={styles.headerContainer}>
-                <Header />
+                <Header title={'Ican Express v'+expo.version}/>
             </View>
             {
                 loading &&
@@ -109,6 +175,9 @@ export default profile = () => {
                         <Text>{data.email}</Text>
                         <Text>{data.telp}</Text>
                         { data.company &&  <Text>{data.company.company_name}</Text> }
+                        <TouchableOpacity onPress={toggleLogout} style={{ borderWidth:2, alignSelf:'center', width:'70%', alignItems:'center', marginVertical:5, padding:2, borderColor:'red', backgroundColor:'red', borderRadius:5 }}>
+                            <Text style={{ color:'white' }}>Logout</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </View>
@@ -148,7 +217,7 @@ export default profile = () => {
                     <ListItem.Title style={{ fontWeight:'bold', fontSize:18 }}>{data.name}</ListItem.Title>
                 </ListItem.Content>
             </ListItem>
-            <Text style={{ fontWeight:'bold', fontSize:16, marginHorizontal:20, marginVertical:10, color:'red' }}>Adress</Text>
+            <Text style={{ fontWeight:'bold', fontSize:16, marginHorizontal:20, marginVertical:10, color:'red' }}>Address</Text>
             <ListItem>
                 <ListItem.Content>
                     <ListItem.Subtitle style={{ color:'grey', fontSize:12 }}>Street</ListItem.Subtitle>
@@ -183,6 +252,17 @@ export default profile = () => {
             }
             </ScrollView>
             <Footer/>
+            <Dialog
+      isVisible={popupLogout}
+      onBackdropPress={toggleLogout}
+    >
+      <Dialog.Title title="Logout"/>
+      <Text>anda ingin logout?</Text>
+      <Dialog.Actions>
+        <Dialog.Button title="Logout" onPress={() => logoutHandler()}/>
+        <Dialog.Button title="Cancel" onPress={toggleLogout}/>
+      </Dialog.Actions>
+    </Dialog>
         </SafeAreaView>
     )
 }
