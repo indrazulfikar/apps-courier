@@ -31,7 +31,7 @@ export default function scanMenu() {
     const [scanned, setScanned] = useState(false);
     const [choice, setChoice] = useState(null);
     const [openScanner, setOpenScanner] = useState(false);
-    const [awb, setAwb] = useState(null);
+    const [awb, setAwb] = useState('');
     const [alasan, setAlasan] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -39,12 +39,13 @@ export default function scanMenu() {
     const [showReceipt, setShowReceipt] = useState(false);
     const [imgUri, setImgUri] = useState('');
     const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
 
     const resetAll = () =>{
       setScanned(false);
       setChoice(null);
       setOpenScanner(false);
-      setAwb(null);
+      setAwb('');
       setAlasan('');
       setLoading(false);
       setStartCamera(false);
@@ -56,6 +57,8 @@ export default function scanMenu() {
     const menuButton = [
       { name : 'Gagal PickUp', code: '3', img : scangagalpickup},
       { name : 'Pickup Sukses', code: '4', img : scansuccesspickup},
+      { name : 'Gagal Corporate', code: '13', img : scangagalpickup},
+      { name : 'Sukses Corporate', code: '9', img : scansuccesspickup},
       { name : 'Diterima DC', code: '5', img : terimadc},
       { name : 'Keluar DC', code: '6', img : terimadc},
       { name : 'Sampai DC', code: '7', img : terimadc},
@@ -146,6 +149,7 @@ export default function scanMenu() {
        formData.append('selected_tracking', choice);
        formData.append('alasan', alasan);
        formData.append('name', name);
+       formData.append('phone', phone);
        if(img != ''){
          const manipResult = await ImageManipulator.manipulateAsync(
            img,
@@ -157,11 +161,12 @@ export default function scanMenu() {
          let type = match ? `image/${match[1]}` : `image`;
          formData.append('img', { uri: manipResult.uri, name: filename, type });
        }
+       let url = (awb.substring(0,2) == 'PO') ? HostUri+'scanCorporate' : HostUri+'scan';
       await SecureStore.getItemAsync('secured_token').then((token) => {
         let optHeader = { "Content-Type": 'multipart/form-data', "Authorization" : `Bearer ${token}`} ;
         axios({
           method: "post",
-          url: HostUri+'scan',
+          url: url,
           headers: optHeader,
           data :formData
         }).then(function (response) {
@@ -284,8 +289,17 @@ export default function scanMenu() {
               <View style={{ padding:10 }}>
                 <Text>Diterima Oleh :</Text>
                 <View style={styles.inputView}>
-              <TextInput onChangeText={(val)=>setName(val)} style={styles.input}/>
-              </View>
+                  <TextInput onChangeText={(val)=>setName(val)} style={styles.input}/>
+                </View>
+                {
+                  awb.substr(0,2) == 'PO' &&
+                <View>                 
+                    <Text>Telp : </Text>
+                <View style={styles.inputView}>
+                  <TextInput onChangeText={(val)=>setPhone(val)} style={styles.input} keyboardType='numeric'/>
+                </View>
+                </View>
+                }
                 <TouchableOpacity onPress={()=>{ receiptHandler()}}>
                 <View style={{ borderColor:'white', backgroundColor:'red', borderWidth:2, borderRadius : 10, padding:10, alignItems:'center'}}>
                   <Text style={{ color:"white", fontWeight:'bold' }}>Update dan Ambil Foto</Text>
