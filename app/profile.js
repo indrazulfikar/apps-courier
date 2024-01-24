@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Dimensions, TextInput } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Dimensions, TextInput, Button } from 'react-native';
 import { useEffect, useState } from 'react';
 import { Icon, ListItem, Divider, Skeleton, Dialog } from '@rneui/themed';
 import { HostUri, HostRef } from './_components/HostUri';
@@ -175,9 +175,7 @@ export default profile = () => {
                         <Text>{data.email}</Text>
                         <Text>{data.telp}</Text>
                         { data.company &&  <Text>{data.company.company_name}</Text> }
-                        <TouchableOpacity onPress={toggleLogout} style={{ borderWidth:2, alignSelf:'center', width:'70%', alignItems:'center', marginVertical:5, padding:2, borderColor:'red', backgroundColor:'red', borderRadius:5 }}>
-                            <Text style={{ color:'white' }}>Logout</Text>
-                        </TouchableOpacity>
+                       <Button title='Logout' onPress={toggleLogout} color='red'/>
                     </View>
                 </View>
             </View>
