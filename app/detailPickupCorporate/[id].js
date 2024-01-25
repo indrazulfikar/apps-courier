@@ -225,9 +225,9 @@ export default function detailListPickupCorporate() {
              }else{
               alert('fail to update')
              }
-             console.error(error.response.data);
-             console.error(error.response.status);
-             console.error(error.response.headers);
+            //  console.error(error.response.data);
+            //  console.error(error.response.status);
+            //  console.error(error.response.headers);
            } else if (error.request) {
              // ga konek ke server
              setLoadingHttp(false);

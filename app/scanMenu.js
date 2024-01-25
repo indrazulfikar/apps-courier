@@ -30,6 +30,7 @@ export default function scanMenu() {
     const [hasPermission, setHasPermission] = useState(null);
     const [scanned, setScanned] = useState(false);
     const [choice, setChoice] = useState(null);
+    const [choiceName, setChoiceName] = useState('');
     const [openScanner, setOpenScanner] = useState(false);
     const [awb, setAwb] = useState('');
     const [alasan, setAlasan] = useState('');
@@ -44,6 +45,7 @@ export default function scanMenu() {
     const resetAll = () =>{
       setScanned(false);
       setChoice(null);
+      setChoiceName('');
       setOpenScanner(false);
       setAwb('');
       setAlasan('');
@@ -110,8 +112,9 @@ export default function scanMenu() {
         // alert(`AWB ${data} Ditandai ${metode[choice].name} !`);
     };
 
-    const handlerChoice = (number) => {
+    const handlerChoice = (number, name) => {
         setChoice(number);
+        setChoiceName(name);
         setOpenScanner(true);
     }
 
@@ -174,7 +177,7 @@ export default function scanMenu() {
             setLoading(false);
             Alert.alert(
               'Sukses',
-              'Awb berhasil di '+menuButton.find(x => x.code === choice).name,
+              'Awb berhasil di '+choiceName,
               [
                 {
                   text: 'Ok',
@@ -212,7 +215,7 @@ export default function scanMenu() {
                   },
                 );
               }else{
-                alert('Gagal '+menuButton.find(x => x.code === choice).name+'('+error.response.data.message+')')
+                alert('Gagal '+choiceName+'('+error.response.data.message+')')
               }
               // console.error(error.response.data);
               // console.error(error.response.status);
@@ -273,7 +276,7 @@ export default function scanMenu() {
           <ScrollView contentContainerStyle={{ flexDirection:'row', flexWrap:'wrap', justifyContent:'space-evenly', alignItems:'flex-start', padding:10  }}>
             {  
               menuButton.map((l, i) => (
-            <TouchableOpacity key={i} style={styles.contentItem} onPress={()=>{handlerChoice(l.code)}}>
+            <TouchableOpacity key={i} style={styles.contentItem} onPress={()=>{handlerChoice(l.code, l.name)}}>
                 <Image source={l.img} style={styles.iconImage} />
                 <Text style={styles.contentText}>{l.name}</Text>
             </TouchableOpacity>

@@ -175,7 +175,6 @@ export default profile = () => {
                         <Text>{data.email}</Text>
                         <Text>{data.telp}</Text>
                         { data.company &&  <Text>{data.company.company_name}</Text> }
-                       <Button title='Logout' onPress={toggleLogout} color='red'/>
                     </View>
                 </View>
             </View>
@@ -191,6 +190,8 @@ export default profile = () => {
                 <Icon type="entypo" name='copy' color="grey" size={20} style={{ marginRight:20 }}/>
             </TouchableOpacity>
             }
+            
+            <Button title='Logout' onPress={toggleLogout} color='red'/>
             <Divider/>
             <ScrollView style={styles.accountInfo}>
             <Text style={{ fontWeight:'bold', fontSize:16, marginHorizontal:20, marginVertical:10, color:'red' }}>Profile</Text>
