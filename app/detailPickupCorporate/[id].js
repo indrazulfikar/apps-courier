@@ -12,6 +12,7 @@ import axios from 'axios';
 import CustomDatePick from '../_components/CustomDatePick';
 import PickUpReceipt from '../_components/PickUpReceipt';
 import * as ImageManipulator from 'expo-image-manipulator';
+import CanvasSignature from '../_components/CanvasSignature';
 
 export default function detailListPickupCorporate() {
     const { id } = useLocalSearchParams();
@@ -27,6 +28,10 @@ export default function detailListPickupCorporate() {
     const [lastPage, setLastPage] = useState(1);
     const [total, setTotal] = useState(0);
     const [loadingmore, setLoadingmore]= useState(false);
+
+    const [startSignature, setStartSignature] = useState(false);
+    const [imgSign, setImgSign] = useState('');
+
 
     const [returnData, setReturnData] = useState({
       order_corporate_id : '',
@@ -138,7 +143,8 @@ export default function detailListPickupCorporate() {
     {
       setStartCamera(false);
       setImgUri(uri);
-      setShowReceipt(true);
+      setStartSignature(true);
+      // setShowReceipt(true);
       // updateShipping(returnData.order_corporate_id, returnData.selected_choice, returnData.name, returnData.check, returnData.reason, uri);
       // console.log(returnData);
     }
@@ -166,6 +172,24 @@ export default function detailListPickupCorporate() {
          let type = match ? `image/${match[1]}` : `image`;
          formData.append('img', { uri: manipResult.uri, name: filename, type });
        }
+       if(imgSign != ''){
+        // const manipSign= await ImageManipulator.manipulateAsync(
+        //   imgSign,
+        //   [],
+        //   { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
+        // ); 
+        // console.log(manipSign);
+        // let filename = manipSign.uri.split('/').pop();
+        // let match = /\.(\w+)$/.exec(filename);
+        // let type = match ? `image/${match[1]}` : `image`;
+        // formData.append('sign', { uri: manipSign.uri, name: filename, type });
+        formData.append('sign', {
+          uri: imgSign, // base64
+          name: order_corporate_id+'_sign.png',
+          type: 'image/png',
+        });
+      }
+
        setLoadingHttp(true);
        await SecureStore.getItemAsync('secured_token').then((token) => {
          let optHeader = { "Content-Type": 'multipart/form-data', "Authorization" : `Bearer ${token}`} ;
@@ -201,9 +225,9 @@ export default function detailListPickupCorporate() {
              }else{
               alert('fail to update')
              }
-             console.error(error.response.data);
-             console.error(error.response.status);
-             console.error(error.response.headers);
+            //  console.error(error.response.data);
+            //  console.error(error.response.status);
+            //  console.error(error.response.headers);
            } else if (error.request) {
              // ga konek ke server
              setLoadingHttp(false);
@@ -240,6 +264,12 @@ export default function detailListPickupCorporate() {
       });
      }
 
+     const returnSign = (sign) => {
+      setImgSign(sign);
+      setStartSignature(false);
+      setShowReceipt(true);
+     }
+
     return (
         <SafeAreaView style={styles.container}>
         {
@@ -251,8 +281,12 @@ export default function detailListPickupCorporate() {
           <View style={styles.headerContainer}>
             <Header/>
           </View>
+          {
+            startSignature &&
+            <CanvasSignature startSignature = {startSignature} returnSign = {returnSign}/>
+          }
           
-          {!startCamera && !showReceipt &&
+          {!startCamera && !showReceipt && !startSignature &&
           <View style={styles.datepickContainer}>
             <View >
               <CustomDatePick />
@@ -271,7 +305,7 @@ export default function detailListPickupCorporate() {
             startCamera &&
             <CanvasCamera startCamera={startCamera} returnImage = {returnImage}/>
           }
-          {!startCamera && !showReceipt &&
+          {!startCamera && !showReceipt && !startSignature &&
             (
             <View>
               <FlatList               

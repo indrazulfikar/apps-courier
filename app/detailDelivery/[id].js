@@ -145,6 +145,7 @@ export default function detailListDelivery() {
         let type = match ? `image/${match[1]}` : `image`;
         formData.append('img', { uri: manipResult.uri, name: filename, type });
       }
+      setLoadingHttp(true);
       await SecureStore.getItemAsync('secured_token').then((token) => {
         let optHeader = {"Content-Type": 'multipart/form-data', "Authorization" : `Bearer ${token}`};
       axios({

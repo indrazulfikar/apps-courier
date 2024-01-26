@@ -105,7 +105,7 @@ const AccordionPickUpCorporate = (props) => {
               && 
               <Dialog.Actions>
           <Dialog.Button
-            title="Updata dan Ambil Foto"
+            title="Update dan Ambil Foto"
             onPress={() => {updateHandler(data.order_corporate_id, data.company_name, data.order_corporate_count, data.order_corporate_weight);}}
             titleStyle={{ color:'red' }}
           />

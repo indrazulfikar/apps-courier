@@ -72,7 +72,7 @@ export default function listPickup() {
           setLoadingCorporate(false);
           setLoadingMoreCorp(false);
           // setData(response.data.data.data);
-          console.log(response.data.data.data)
+          // console.log(response.data.data.data)
           if(currentPage == 1){
             setDataCorporate(response.data.data.data)
           }else{
