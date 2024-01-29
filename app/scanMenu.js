@@ -24,6 +24,7 @@ import refundfinish from '../assets/refundfinish.png';
 import refundtake from '../assets/refundtake.png';
 import CanvasCamera from './_components/CanvasCamera';
 import { TextInput } from 'react-native-gesture-handler';
+import CanvasSignature from './_components/CanvasSignature';
 
 export default function scanMenu() {
     
@@ -41,6 +42,9 @@ export default function scanMenu() {
     const [imgUri, setImgUri] = useState('');
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
+
+    const [startSignature, setStartSignature] = useState(false);
+    const [imgSign, setImgSign] = useState('');
 
     const resetAll = () =>{
       setScanned(false);
@@ -136,15 +140,27 @@ export default function scanMenu() {
     const returnImage = (uri) =>
     {
       setStartCamera(false);
-      updateAwb(awb, uri.uri);
+      setImgUri(uri);
+      if(choiceName == 'Sukses Corporate'){
+        setStartSignature(true);
+      }else{
+        updateAwb(awb, uri.uri);
+      }
     }
+
+    const returnSign = (sign) => {
+      setImgSign(sign);
+      setStartSignature(false);
+      updateAwb(awb, imgUri.uri, sign);
+      // setShowReceipt(true);
+     }
 
     const receiptHandler = () =>{
       setShowReceipt(false);
       setStartCamera(true);
     }
 
-    const updateAwb = async(awb, img= '')=>
+    const updateAwb = async(awb, img= '', sign = '')=>
     {
       setLoading(true);
        let formData = new FormData();
@@ -163,6 +179,13 @@ export default function scanMenu() {
          let match = /\.(\w+)$/.exec(filename);
          let type = match ? `image/${match[1]}` : `image`;
          formData.append('img', { uri: manipResult.uri, name: filename, type });
+       }
+       if(sign != ''){
+        formData.append('sign', {
+          uri: sign, // base64
+          name: awb+'_sign.png',
+          type: 'image/png',
+        });
        }
        let url = (awb.substring(0,2) == 'PO') ? HostUri+'scanCorporate' : HostUri+'scan';
       await SecureStore.getItemAsync('secured_token').then((token) => {
@@ -215,7 +238,8 @@ export default function scanMenu() {
                   },
                 );
               }else{
-                alert('Gagal '+choiceName+'('+error.response.data.message+')')
+                // alert('Gagal '+choiceName+'('+error.response.data.message+')')
+                alert('Gagal '+choiceName+'(Internal Server Err)')
               }
               // console.error(error.response.data);
               // console.error(error.response.status);
@@ -246,6 +270,10 @@ export default function scanMenu() {
         <View style={styles.headerContainer}>
             <Header title="SCAN AWB"/>
         </View>
+        {
+          startSignature &&
+          <CanvasSignature startSignature = {startSignature} returnSign = {returnSign}/>
+        }
         
         <View style={{flex:10 }}>
         {
@@ -272,7 +300,7 @@ export default function scanMenu() {
           startCamera &&
           <CanvasCamera startCamera={startCamera} returnImage = {returnImage}/>
       }
-        { !openScanner && !startCamera &&
+        { !openScanner && !startCamera && !startSignature &&
           <ScrollView contentContainerStyle={{ flexDirection:'row', flexWrap:'wrap', justifyContent:'space-evenly', alignItems:'flex-start', padding:10  }}>
             {  
               menuButton.map((l, i) => (
