@@ -190,9 +190,12 @@ export default profile = () => {
                 <Icon type="entypo" name='copy' color="grey" size={20} style={{ marginRight:20 }}/>
             </TouchableOpacity>
             }
+            <Button title='Logout' onPress={toggleLogout} color='red'/>            
             
-            <Button title='Logout' onPress={toggleLogout} color='red'/>
-            <Divider/>
+            <TouchableOpacity style={{  margin: 15, width:'30%' }}>
+            <Text style={{ fontSize:12, color:'red' }} onPress={() => {router.push('/changePassword')}}>Change Password</Text>
+            </TouchableOpacity>
+
             <ScrollView style={styles.accountInfo}>
             <Text style={{ fontWeight:'bold', fontSize:16, marginHorizontal:20, marginVertical:10, color:'red' }}>Profile</Text>
             {
