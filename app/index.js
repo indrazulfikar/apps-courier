@@ -113,6 +113,10 @@ export default function index() {
       <TouchableOpacity style={styles.loginBtn} onPress={()=>{loginHandler()}}>
         <Text style={styles.loginText}>LOGIN</Text>
       </TouchableOpacity>
+      
+      <TouchableOpacity style={{ marginTop:15 }} onPress={()=>{router.push('/forgotPassword')}}>
+        <Text style={{ color:'white' }}>Lupa Password?</Text>
+      </TouchableOpacity>
       <Divider
       style={{ width: "80%", margin: 20 }}
       color="white"
