@@ -48,6 +48,7 @@ export default function index() {
         // console.log(response);
         save('secured_token', response.data.data.token);
         save('secured_name', response.data.data.name);
+        save('secured_role', response.data.data.role);
         setLoading(false);
         router.replace('/home');
       }).catch(function (error) {
@@ -59,7 +60,8 @@ export default function index() {
           {
             alert('telp / password salah !')
           }else{
-            alert(error.response.data.message)
+            // alert(error.response.data.message)
+            alert('Error Please Contact Administrator');
 
           }
           // console.error(error.response.data);

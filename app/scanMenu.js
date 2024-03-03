@@ -10,21 +10,23 @@ import * as SecureStore from 'expo-secure-store';
 import * as ImageManipulator from 'expo-image-manipulator';
 
 //images
-import scangagalpickup from '../assets/scangagalpickup.png';
-import scansuccesspickup from '../assets/scansuccesspickup.png';
-import terimadc from '../assets/terimadc.png';
-import dikirimkurir from '../assets/dikirimkurir.png';
-import selesai from '../assets/selesai.png';
-import pending from '../assets/pending.png';
-import motormini from '../assets/motormini.png';
-import gagal from '../assets/gagal.png';
-import refunddc from '../assets/refunddc.png';
-import kurirrefund from '../assets/kurirrefund.png';
-import refundfinish from '../assets/refundfinish.png';
-import refundtake from '../assets/refundtake.png';
+// import scangagalpickup from '../assets/scangagalpickup.png';
+// import scansuccesspickup from '../assets/scansuccesspickup.png';
+// import terimadc from '../assets/terimadc.png';
+// import dikirimkurir from '../assets/dikirimkurir.png';
+// import selesai from '../assets/selesai.png';
+// import pending from '../assets/pending.png';
+// import motormini from '../assets/motormini.png';
+// import gagal from '../assets/gagal.png';
+// import refunddc from '../assets/refunddc.png';
+// import kurirrefund from '../assets/kurirrefund.png';
+// import refundfinish from '../assets/refundfinish.png';
+// import refundtake from '../assets/refundtake.png';
+
 import CanvasCamera from './_components/CanvasCamera';
 import { TextInput } from 'react-native-gesture-handler';
 import CanvasSignature from './_components/CanvasSignature';
+import { ScanMenu } from './_components/RolesScan';
 
 export default function scanMenu() {
     
@@ -45,6 +47,7 @@ export default function scanMenu() {
 
     const [startSignature, setStartSignature] = useState(false);
     const [imgSign, setImgSign] = useState('');
+    const [menuButton, setMenuButton] = useState([]);
 
     const resetAll = () =>{
       setScanned(false);
@@ -60,28 +63,37 @@ export default function scanMenu() {
       setName('');
     }
 
-    const menuButton = [
-      { name : 'Gagal PickUp', code: '3', img : scangagalpickup},
-      { name : 'Pickup Sukses', code: '4', img : scansuccesspickup},
-      { name : 'Gagal Corporate', code: '13', img : scangagalpickup},
-      { name : 'Sukses Corporate', code: '9', img : scansuccesspickup},
-      { name : 'Diterima DC', code: '5', img : terimadc},
-      { name : 'Keluar DC', code: '6', img : terimadc},
-      { name : 'Sampai DC', code: '7', img : terimadc},
-      { name : 'Dikirim Kurir', code: '8', img : dikirimkurir},
-      { name : 'Selesai', code: '9', img : selesai},
-      { name : 'Pending',code: '10', img : pending},
-      { name : 'Call Attempt 2', code: '11', img : motormini},
-      { name : 'Call Attempt 3', code: '12', img : motormini},
-      { name : 'Gagal', code: '13', img : gagal},
-      { name : 'Refund Diterima DC', code: '14', img : refunddc},
-      { name : 'Refund Keluar DC',code: '15', img : refunddc},
-      { name : 'Kurir Refund', code: '16', img : kurirrefund},
-      { name : 'Refund Finish', code: '17', img : refundfinish},
-      { name : 'Refund Diambil', code: '18', img : refundtake},
-    ];
+    // const menuButton = [
+    //   { name : 'Gagal PickUp', code: '3', img : scangagalpickup},
+    //   { name : 'Pickup Sukses', code: '4', img : scansuccesspickup},
+    //   { name : 'Gagal Corporate', code: '13', img : scangagalpickup},
+    //   { name : 'Sukses Corporate', code: '9', img : scansuccesspickup},
+    //   { name : 'Diterima DC', code: '5', img : terimadc},
+    //   { name : 'Keluar DC', code: '6', img : terimadc},
+    //   { name : 'Sampai DC', code: '7', img : terimadc},
+    //   { name : 'Dikirim Kurir', code: '8', img : dikirimkurir},
+    //   { name : 'Selesai', code: '9', img : selesai},
+    //   { name : 'Pending',code: '10', img : pending},
+    //   { name : 'Call Attempt 2', code: '11', img : motormini},
+    //   { name : 'Call Attempt 3', code: '12', img : motormini},
+    //   { name : 'Gagal', code: '13', img : gagal},
+    //   { name : 'Refund Diterima DC', code: '14', img : refunddc},
+    //   { name : 'Refund Keluar DC',code: '15', img : refunddc},
+    //   { name : 'Kurir Refund', code: '16', img : kurirrefund},
+    //   { name : 'Refund Finish', code: '17', img : refundfinish},
+    //   { name : 'Refund Diambil', code: '18', img : refundtake},
+    // ];
 
     useEffect(() => {
+      async function getValueFor(key) {
+        await SecureStore.getItemAsync(key).then((result) => {
+          if(result){
+            // setRole(result);
+            setMenuButton(ScanMenu(result));
+          }
+        });
+      }
+      getValueFor('secured_role');
         const getBarCodeScannerPermissions = async () => {
           const { status } = await BarCodeScanner.requestPermissionsAsync();
           setHasPermission(status === 'granted');
@@ -239,7 +251,7 @@ export default function scanMenu() {
                 );
               }else{
                 // alert('Gagal '+choiceName+'('+error.response.data.message+')')
-                alert('Gagal '+choiceName+'(Internal Server Err)')
+                alert('Gagal '+choiceName+'(Not Allowed)')
               }
               // console.error(error.response.data);
               // console.error(error.response.status);
@@ -301,7 +313,7 @@ export default function scanMenu() {
           <CanvasCamera startCamera={startCamera} returnImage = {returnImage}/>
       }
         { !openScanner && !startCamera && !startSignature &&
-          <ScrollView contentContainerStyle={{ flexDirection:'row', flexWrap:'wrap', justifyContent:'space-evenly', alignItems:'flex-start', padding:10  }}>
+          <ScrollView contentContainerStyle={{ flexDirection:'row', flexWrap:'wrap', justifyContent:'center', alignItems:'flex-start', padding:10  }}>
             {  
               menuButton.map((l, i) => (
             <TouchableOpacity key={i} style={styles.contentItem} onPress={()=>{handlerChoice(l.code, l.name)}}>

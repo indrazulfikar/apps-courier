@@ -1,23 +1,38 @@
 import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, TextInput, Image, ScrollView, useWindowDimensions } from 'react-native';
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import Header from './_components/Header';
 import Footer from './_components/Footer';
-import { useState} from 'react';
-
+import { useEffect, useState} from 'react';
+import { HomeMenu } from './_components/RolesHome';
+import * as SecureStore from 'expo-secure-store';
 //icons 
-import mobil from '../assets/mobil.png';
-import mobilb from '../assets/mobil2.png';
-import motor from '../assets/motor.png';
-import box from '../assets/box.png';
-import boxgagal from '../assets/boxgagal.png';
-import dikirimkurir from '../assets/dikirimkurir.png';
-import scan from '../assets/scan.png';
-import sirine from '../assets/sirine.png';
-import pending from '../assets/pending.png';
+// import mobil from '../assets/mobil.png';
+// import mobilb from '../assets/mobil2.png';
+// import motor from '../assets/motor.png';
+// import box from '../assets/box.png';
+// import boxgagal from '../assets/boxgagal.png';
+// import dikirimkurir from '../assets/dikirimkurir.png';
+// import scan from '../assets/scan.png';
+// import sirine from '../assets/sirine.png';
+// import pending from '../assets/pending.png';
 
 export default function home() {
 
   const windowHeight = useWindowDimensions().height
+  const [role, setRole] = useState();
+  const [list, setList] = useState([]);
+
+  useEffect(() => {
+    async function getValueFor(key) {
+      await SecureStore.getItemAsync(key).then((result) => {
+        if(result){
+          setRole(result);
+            setList(HomeMenu(result));
+        }
+      });
+    }
+    getValueFor('secured_role');
+  }, []);
 
   return (
     <SafeAreaView style={[styles.container, { minHeight: Math.round(windowHeight) }] }>
@@ -35,67 +50,21 @@ export default function home() {
       </View>
 
       <ScrollView style={styles.contentBackground }>
-
         <View style={styles.contentList}>
-          <Link href="/listPickup" asChild>
+      {  
+        
+        list.map((l, i) => (
+          <Link href={l.ref} asChild key={i}>
             <TouchableOpacity style={styles.contentItem}>
-              <Image source={mobil} style={styles.iconImage}/>
-              <Text style={styles.contentText}>List Pickup</Text>
+              <Image source={l.src} style={styles.iconImage}/>
+              <Text style={styles.contentText}>{l.text}</Text>
             </TouchableOpacity>
           </Link>
-          <Link href="/listPickUpSuccess" asChild>
-            <TouchableOpacity style={styles.contentItem}>
-              <Image source={motor} />
-              <Text style={styles.contentText}>Pickup Sukses</Text>
-            </TouchableOpacity>
-          </Link>
-          <Link href="/listPickUpFail" asChild>
-            <TouchableOpacity style={styles.contentItem}>
-              <Image source={box} />
-              <Text style={styles.contentText}>Gagal Pickup</Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
+      ))
+    }
 
-        <View style={styles.contentList}>
-          <Link href="/listDelivery" asChild>
-            <TouchableOpacity style={styles.contentItem}>
-              <Image source={mobilb} />
-              <Text style={styles.contentText}>List Delivery</Text>
-            </TouchableOpacity>
-          </Link>
-          <Link href="/listDeliverySuccess" asChild>
-            <TouchableOpacity   style={styles.contentItem}>
-              <Image source={dikirimkurir} />
-              <Text style={styles.contentText}>Delivery Sukses</Text>
-            </TouchableOpacity>
-          </Link>
-          <Link href="/listDeliveryFail" asChild>
-            <TouchableOpacity style={styles.contentItem}>
-              <Image source={boxgagal} />
-              <Text style={styles.contentText}>Delivery Gagal</Text>
-            </TouchableOpacity>
-          </Link>
         </View>
-
-        <View style={styles.contentList}>
-          <Link href="/listDeliveryPending" asChild>
-            <TouchableOpacity style={styles.contentItem}>
-              <Image source={pending} />
-              <Text style={styles.contentText}>Paket Pending</Text>
-            </TouchableOpacity>
-          </Link>
-          <Link href="/scanMenu" asChild>
-            <TouchableOpacity style={styles.contentItem}>
-              <Image source={scan} />
-              <Text style={styles.contentText}>Scan AWB</Text>
-            </TouchableOpacity>
-          </Link>
-          <TouchableOpacity style={styles.contentItem}>
-            <Image source={sirine} />
-            <Text style={styles.contentText}>Emergency</Text>
-          </TouchableOpacity>
-        </View>
+        
       </ScrollView>
     <Footer />
     </SafeAreaView>
@@ -136,6 +105,7 @@ const styles = StyleSheet.create({
     flex:1,
     flexDirection:'row',
     justifyContent:'flex-start',
+    flexWrap : 'wrap'
   },
   contentItem : {
     padding:10, 
