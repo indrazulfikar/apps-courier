@@ -6,6 +6,7 @@ import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity} from "react
 import { HostUri } from "./_components/HostUri";
 import * as SecureStore from 'expo-secure-store';
 import axios from "axios";
+import {expo} from '../app.json';
 
 export default function index() {
 
@@ -20,9 +21,29 @@ export default function index() {
 
   useEffect(() => {
     async function getValueFor(key) {
-      await SecureStore.getItemAsync(key).then((result) => {
-        if(result){
-          router.replace('/home');
+      await SecureStore.getItemAsync(key).then((token) => {
+        if(token){
+          setLoading(true);
+          axios({
+            method: "get",
+            url: HostUri+'courierAppVersion?'+`version=${expo.version}`,
+            headers: {
+              "Content-Type": 'application/json',
+              "Authorization" : `Bearer ${token}`,
+            },
+          }).then(function(result){
+            router.replace('/home');
+          }).catch(function(error){
+            if(error.response.data.message == 'Not The Latest Version'){
+                SecureStore.deleteItemAsync('secured_token');
+                SecureStore.deleteItemAsync('secured_name');
+                alert('Update Aplikasi Anda ! kunjungi '+HostUri.replace('/api/', ''));
+            }else{
+              alert('Check Koneksi anda !');
+            }
+          }).finally(function(){
+            setLoading(false);
+          });
         }
       });
     }
@@ -37,7 +58,7 @@ export default function index() {
     setLoading(true);
     await axios.post(
       HostUri+'login',
-      { telp: phone, password: password,},
+      { telp: phone, password: password,version:expo.version},
       {
         headers: {
           'Content-Type': 'application/json'
@@ -59,6 +80,8 @@ export default function index() {
           if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
           {
             alert('telp / password salah !')
+          }else if(error.response.data.message == 'Not The Latest Version'){
+            alert('Update Aplikasi Anda ! kunjungi '+HostUri.replace('/api/', ''));
           }else{
             // alert(error.response.data.message)
             alert('Error Please Contact Administrator');

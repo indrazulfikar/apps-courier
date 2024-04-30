@@ -175,19 +175,22 @@ export default function detailListDelivery() {
               SecureStore.deleteItemAsync('secured_token');
               SecureStore.deleteItemAsync('secured_name');
               router.replace('/');
+            }else{
+              alert('Gagal ('+error.response.data.message+')');
             }
-            console.error(error.response.data);
-            console.error(error.response.status);
-            console.error(error.response.headers);
+            // console.error(error.response.data);
+            // console.error(error.response.status);
+            // console.error(error.response.headers);
           } else if (error.request) {
             // ga konek ke server
             setLoadingHttp(false);
             alert('Check Koneksi anda !')
-            console.error(error.request);
+            // console.error(error.request);
           } else {
             setLoadingHttp(false);
+            alert('Fatal Error Please Contact Admin');
             // error yang ga di sangka2
-            console.error("Error", error.message);
+            // console.error("Error", error.message);
           }
       });
   });

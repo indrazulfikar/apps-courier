@@ -7,7 +7,7 @@ import * as SecureStore from 'expo-secure-store';
 import Footer from './_components/Footer';
 import Header from './_components/Header';
 import * as Clipboard from 'expo-clipboard';
-import {expo} from '../app.json'
+import {expo} from '../app.json';
 import { router } from 'expo-router';
 
 export default profile = () => {
