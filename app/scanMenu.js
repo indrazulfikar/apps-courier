@@ -9,6 +9,8 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import * as ImageManipulator from 'expo-image-manipulator';
 
+import motormini from '../assets/motormini.png';
+
 //images
 // import scangagalpickup from '../assets/scangagalpickup.png';
 // import scansuccesspickup from '../assets/scansuccesspickup.png';
@@ -27,6 +29,7 @@ import CanvasCamera from './_components/CanvasCamera';
 import { TextInput } from 'react-native-gesture-handler';
 import CanvasSignature from './_components/CanvasSignature';
 import { ScanMenu } from './_components/RolesScan';
+import { router } from 'expo-router';
 
 export default function scanMenu() {
     
@@ -313,7 +316,7 @@ export default function scanMenu() {
           <CanvasCamera startCamera={startCamera} returnImage = {returnImage}/>
       }
         { !openScanner && !startCamera && !startSignature &&
-          <ScrollView contentContainerStyle={{ flexDirection:'row', flexWrap:'wrap', justifyContent:'center', alignItems:'flex-start', padding:10  }}>
+          <ScrollView contentContainerStyle={{ flexDirection:'row', flexWrap:'wrap', justifyContent:'center', alignItems:'flex-start' }}>
             {  
               menuButton.map((l, i) => (
             <TouchableOpacity key={i} style={styles.contentItem} onPress={()=>{handlerChoice(l.code, l.name)}}>
@@ -322,6 +325,18 @@ export default function scanMenu() {
             </TouchableOpacity>
               ))
             }
+            <TouchableOpacity key={'x'} style={styles.contentItem} onPress={()=>{router.replace('/assignPickupCourier')}}>
+                <Image source={motormini} style={styles.iconImage} />
+                <Text style={styles.contentText}>Assign Pickup</Text>
+            </TouchableOpacity>
+            <TouchableOpacity key={'xx'} style={styles.contentItem} onPress={()=>{router.replace('/assignDeliveryCourier')}}>
+              <Image source={motormini} style={styles.iconImage} />
+                <Text style={styles.contentText}>Assign Deliv</Text>
+            </TouchableOpacity>
+            <TouchableOpacity key={'xxx'} style={styles.contentItem} onPress={()=>{router.replace('/assignReturCourier')}}>
+              <Image source={motormini} style={styles.iconImage} /> 
+                <Text style={styles.contentText}>Assign Refund</Text>
+            </TouchableOpacity>
         </ScrollView>
         }
         
@@ -365,14 +380,15 @@ export default function scanMenu() {
       height:'10%'
     },
     contentItem : {
-      padding:10, 
+      padding:5, 
       margin:5, 
       borderColor:'#FF8080', 
       borderWidth:1, 
       borderRadius:10,
       alignItems:'center',
       justifyContent:'space-evenly',
-      width: '20%'
+      width: '20%',
+      flexWrap:'wrap',
     },
     iconImage:{
       resizeMode : 'contain'

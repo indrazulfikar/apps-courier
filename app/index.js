@@ -2,7 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { router } from "expo-router";
 import { Divider, Dialog, Icon } from '@rneui/themed';
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity} from "react-native";
+import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, SafeAreaView} from "react-native";
 import { HostUri } from "./_components/HostUri";
 import * as SecureStore from 'expo-secure-store';
 import axios from "axios";
@@ -106,13 +106,13 @@ export default function index() {
 
   return (
 
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar backgroundColor="#ed1e24" style="light-content" />
     <Dialog isVisible={loading} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
       <Dialog.Loading />
     </Dialog>
     <Image style={styles.imageLogo} source={require("../assets/icondepan.png")} />
     <Image style={styles.image} source={require("../assets/logo-login.png")} />
-      <StatusBar style="auto" />
 
       <View style={styles.inputView}>
         <TextInput
@@ -151,7 +151,7 @@ export default function index() {
       width={1}
       orientation="horizontal"
     />
-    </View>
+    </SafeAreaView>
   );
 
 }
