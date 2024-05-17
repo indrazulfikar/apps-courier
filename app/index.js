@@ -2,10 +2,11 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { router } from "expo-router";
 import { Divider, Dialog, Icon } from '@rneui/themed';
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity} from "react-native";
+import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, SafeAreaView} from "react-native";
 import { HostUri } from "./_components/HostUri";
 import * as SecureStore from 'expo-secure-store';
 import axios from "axios";
+import {expo} from '../app.json';
 
 export default function index() {
 
@@ -20,9 +21,29 @@ export default function index() {
 
   useEffect(() => {
     async function getValueFor(key) {
-      await SecureStore.getItemAsync(key).then((result) => {
-        if(result){
-          router.replace('/home');
+      await SecureStore.getItemAsync(key).then((token) => {
+        if(token){
+          setLoading(true);
+          axios({
+            method: "get",
+            url: HostUri+'courierAppVersion?'+`version=${expo.version}`,
+            headers: {
+              "Content-Type": 'application/json',
+              "Authorization" : `Bearer ${token}`,
+            },
+          }).then(function(result){
+            router.replace('/home');
+          }).catch(function(error){
+            if(error.response.data.message == 'Not The Latest Version'){
+                SecureStore.deleteItemAsync('secured_token');
+                SecureStore.deleteItemAsync('secured_name');
+                alert('Update Aplikasi Anda ! kunjungi '+HostUri.replace('/api/', ''));
+            }else{
+              alert('Check Koneksi anda !');
+            }
+          }).finally(function(){
+            setLoading(false);
+          });
         }
       });
     }
@@ -37,7 +58,7 @@ export default function index() {
     setLoading(true);
     await axios.post(
       HostUri+'login',
-      { telp: phone, password: password,},
+      { telp: phone, password: password,version:expo.version},
       {
         headers: {
           'Content-Type': 'application/json'
@@ -48,6 +69,7 @@ export default function index() {
         // console.log(response);
         save('secured_token', response.data.data.token);
         save('secured_name', response.data.data.name);
+        save('secured_role', response.data.data.role);
         setLoading(false);
         router.replace('/home');
       }).catch(function (error) {
@@ -58,8 +80,11 @@ export default function index() {
           if(error.response.data.message == 'Unauthenticated.' || error.response.data.message == 'Unauthorized')
           {
             alert('telp / password salah !')
+          }else if(error.response.data.message == 'Not The Latest Version'){
+            alert('Update Aplikasi Anda ! kunjungi '+HostUri.replace('/api/', ''));
           }else{
-            alert(error.response.data.message)
+            // alert(error.response.data.message)
+            alert('Error Please Contact Administrator');
 
           }
           // console.error(error.response.data);
@@ -81,13 +106,13 @@ export default function index() {
 
   return (
 
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar backgroundColor="#ed1e24" style="light-content" />
     <Dialog isVisible={loading} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
       <Dialog.Loading />
     </Dialog>
     <Image style={styles.imageLogo} source={require("../assets/icondepan.png")} />
     <Image style={styles.image} source={require("../assets/logo-login.png")} />
-      <StatusBar style="auto" />
 
       <View style={styles.inputView}>
         <TextInput
@@ -113,6 +138,10 @@ export default function index() {
       <TouchableOpacity style={styles.loginBtn} onPress={()=>{loginHandler()}}>
         <Text style={styles.loginText}>LOGIN</Text>
       </TouchableOpacity>
+      
+      <TouchableOpacity style={{ marginTop:15 }} onPress={()=>{router.push('/forgotPassword')}}>
+        <Text style={{ color:'white' }}>Lupa Password?</Text>
+      </TouchableOpacity>
       <Divider
       style={{ width: "80%", margin: 20 }}
       color="white"
@@ -122,7 +151,7 @@ export default function index() {
       width={1}
       orientation="horizontal"
     />
-    </View>
+    </SafeAreaView>
   );
 
 }

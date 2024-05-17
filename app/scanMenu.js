@@ -9,21 +9,27 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import * as ImageManipulator from 'expo-image-manipulator';
 
-//images
-import scangagalpickup from '../assets/scangagalpickup.png';
-import scansuccesspickup from '../assets/scansuccesspickup.png';
-import terimadc from '../assets/terimadc.png';
-import dikirimkurir from '../assets/dikirimkurir.png';
-import selesai from '../assets/selesai.png';
-import pending from '../assets/pending.png';
 import motormini from '../assets/motormini.png';
-import gagal from '../assets/gagal.png';
-import refunddc from '../assets/refunddc.png';
-import kurirrefund from '../assets/kurirrefund.png';
-import refundfinish from '../assets/refundfinish.png';
-import refundtake from '../assets/refundtake.png';
+
+//images
+// import scangagalpickup from '../assets/scangagalpickup.png';
+// import scansuccesspickup from '../assets/scansuccesspickup.png';
+// import terimadc from '../assets/terimadc.png';
+// import dikirimkurir from '../assets/dikirimkurir.png';
+// import selesai from '../assets/selesai.png';
+// import pending from '../assets/pending.png';
+// import motormini from '../assets/motormini.png';
+// import gagal from '../assets/gagal.png';
+// import refunddc from '../assets/refunddc.png';
+// import kurirrefund from '../assets/kurirrefund.png';
+// import refundfinish from '../assets/refundfinish.png';
+// import refundtake from '../assets/refundtake.png';
+
 import CanvasCamera from './_components/CanvasCamera';
 import { TextInput } from 'react-native-gesture-handler';
+import CanvasSignature from './_components/CanvasSignature';
+import { ScanMenu } from './_components/RolesScan';
+import { router } from 'expo-router';
 
 export default function scanMenu() {
     
@@ -42,6 +48,10 @@ export default function scanMenu() {
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
 
+    const [startSignature, setStartSignature] = useState(false);
+    const [imgSign, setImgSign] = useState('');
+    const [menuButton, setMenuButton] = useState([]);
+
     const resetAll = () =>{
       setScanned(false);
       setChoice(null);
@@ -56,28 +66,37 @@ export default function scanMenu() {
       setName('');
     }
 
-    const menuButton = [
-      { name : 'Gagal PickUp', code: '3', img : scangagalpickup},
-      { name : 'Pickup Sukses', code: '4', img : scansuccesspickup},
-      { name : 'Gagal Corporate', code: '13', img : scangagalpickup},
-      { name : 'Sukses Corporate', code: '9', img : scansuccesspickup},
-      { name : 'Diterima DC', code: '5', img : terimadc},
-      { name : 'Keluar DC', code: '6', img : terimadc},
-      { name : 'Sampai DC', code: '7', img : terimadc},
-      { name : 'Dikirim Kurir', code: '8', img : dikirimkurir},
-      { name : 'Selesai', code: '9', img : selesai},
-      { name : 'Pending',code: '10', img : pending},
-      { name : 'Call Attempt 2', code: '11', img : motormini},
-      { name : 'Call Attempt 3', code: '12', img : motormini},
-      { name : 'Gagal', code: '13', img : gagal},
-      { name : 'Refund Diterima DC', code: '14', img : refunddc},
-      { name : 'Refund Keluar DC',code: '15', img : refunddc},
-      { name : 'Kurir Refund', code: '16', img : kurirrefund},
-      { name : 'Refund Finish', code: '17', img : refundfinish},
-      { name : 'Refund Diambil', code: '18', img : refundtake},
-    ];
+    // const menuButton = [
+    //   { name : 'Gagal PickUp', code: '3', img : scangagalpickup},
+    //   { name : 'Pickup Sukses', code: '4', img : scansuccesspickup},
+    //   { name : 'Gagal Corporate', code: '13', img : scangagalpickup},
+    //   { name : 'Sukses Corporate', code: '9', img : scansuccesspickup},
+    //   { name : 'Diterima DC', code: '5', img : terimadc},
+    //   { name : 'Keluar DC', code: '6', img : terimadc},
+    //   { name : 'Sampai DC', code: '7', img : terimadc},
+    //   { name : 'Dikirim Kurir', code: '8', img : dikirimkurir},
+    //   { name : 'Selesai', code: '9', img : selesai},
+    //   { name : 'Pending',code: '10', img : pending},
+    //   { name : 'Call Attempt 2', code: '11', img : motormini},
+    //   { name : 'Call Attempt 3', code: '12', img : motormini},
+    //   { name : 'Gagal', code: '13', img : gagal},
+    //   { name : 'Refund Diterima DC', code: '14', img : refunddc},
+    //   { name : 'Refund Keluar DC',code: '15', img : refunddc},
+    //   { name : 'Kurir Refund', code: '16', img : kurirrefund},
+    //   { name : 'Refund Finish', code: '17', img : refundfinish},
+    //   { name : 'Refund Diambil', code: '18', img : refundtake},
+    // ];
 
     useEffect(() => {
+      async function getValueFor(key) {
+        await SecureStore.getItemAsync(key).then((result) => {
+          if(result){
+            // setRole(result);
+            setMenuButton(ScanMenu(result));
+          }
+        });
+      }
+      getValueFor('secured_role');
         const getBarCodeScannerPermissions = async () => {
           const { status } = await BarCodeScanner.requestPermissionsAsync();
           setHasPermission(status === 'granted');
@@ -136,15 +155,27 @@ export default function scanMenu() {
     const returnImage = (uri) =>
     {
       setStartCamera(false);
-      updateAwb(awb, uri.uri);
+      setImgUri(uri);
+      if(choiceName == 'Sukses Corporate'){
+        setStartSignature(true);
+      }else{
+        updateAwb(awb, uri.uri);
+      }
     }
+
+    const returnSign = (sign) => {
+      setImgSign(sign);
+      setStartSignature(false);
+      updateAwb(awb, imgUri.uri, sign);
+      // setShowReceipt(true);
+     }
 
     const receiptHandler = () =>{
       setShowReceipt(false);
       setStartCamera(true);
     }
 
-    const updateAwb = async(awb, img= '')=>
+    const updateAwb = async(awb, img= '', sign = '')=>
     {
       setLoading(true);
        let formData = new FormData();
@@ -163,6 +194,13 @@ export default function scanMenu() {
          let match = /\.(\w+)$/.exec(filename);
          let type = match ? `image/${match[1]}` : `image`;
          formData.append('img', { uri: manipResult.uri, name: filename, type });
+       }
+       if(sign != ''){
+        formData.append('sign', {
+          uri: sign, // base64
+          name: awb+'_sign.png',
+          type: 'image/png',
+        });
        }
        let url = (awb.substring(0,2) == 'PO') ? HostUri+'scanCorporate' : HostUri+'scan';
       await SecureStore.getItemAsync('secured_token').then((token) => {
@@ -215,7 +253,8 @@ export default function scanMenu() {
                   },
                 );
               }else{
-                alert('Gagal '+choiceName+'('+error.response.data.message+')')
+                // alert('Gagal '+choiceName+'('+error.response.data.message+')')
+                alert('Gagal '+choiceName+'(Not Allowed)')
               }
               // console.error(error.response.data);
               // console.error(error.response.status);
@@ -246,6 +285,10 @@ export default function scanMenu() {
         <View style={styles.headerContainer}>
             <Header title="SCAN AWB"/>
         </View>
+        {
+          startSignature &&
+          <CanvasSignature startSignature = {startSignature} returnSign = {returnSign}/>
+        }
         
         <View style={{flex:10 }}>
         {
@@ -272,8 +315,8 @@ export default function scanMenu() {
           startCamera &&
           <CanvasCamera startCamera={startCamera} returnImage = {returnImage}/>
       }
-        { !openScanner && !startCamera &&
-          <ScrollView contentContainerStyle={{ flexDirection:'row', flexWrap:'wrap', justifyContent:'space-evenly', alignItems:'flex-start', padding:10  }}>
+        { !openScanner && !startCamera && !startSignature &&
+          <ScrollView contentContainerStyle={{ flexDirection:'row', flexWrap:'wrap', justifyContent:'center', alignItems:'flex-start' }}>
             {  
               menuButton.map((l, i) => (
             <TouchableOpacity key={i} style={styles.contentItem} onPress={()=>{handlerChoice(l.code, l.name)}}>
@@ -282,6 +325,18 @@ export default function scanMenu() {
             </TouchableOpacity>
               ))
             }
+            <TouchableOpacity key={'x'} style={styles.contentItem} onPress={()=>{router.replace('/assignPickupCourier')}}>
+                <Image source={motormini} style={styles.iconImage} />
+                <Text style={styles.contentText}>Assign Pickup</Text>
+            </TouchableOpacity>
+            <TouchableOpacity key={'xx'} style={styles.contentItem} onPress={()=>{router.replace('/assignDeliveryCourier')}}>
+              <Image source={motormini} style={styles.iconImage} />
+                <Text style={styles.contentText}>Assign Deliv</Text>
+            </TouchableOpacity>
+            <TouchableOpacity key={'xxx'} style={styles.contentItem} onPress={()=>{router.replace('/assignReturCourier')}}>
+              <Image source={motormini} style={styles.iconImage} /> 
+                <Text style={styles.contentText}>Assign Refund</Text>
+            </TouchableOpacity>
         </ScrollView>
         }
         
@@ -325,14 +380,15 @@ export default function scanMenu() {
       height:'10%'
     },
     contentItem : {
-      padding:10, 
+      padding:5, 
       margin:5, 
       borderColor:'#FF8080', 
       borderWidth:1, 
       borderRadius:10,
       alignItems:'center',
       justifyContent:'space-evenly',
-      width: '20%'
+      width: '20%',
+      flexWrap:'wrap',
     },
     iconImage:{
       resizeMode : 'contain'
