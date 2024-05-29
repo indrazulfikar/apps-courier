@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, Image, ScrollVi
 import Header from './_components/Header';
 import Footer from './_components/Footer';
 import { BarCodeScanner } from 'expo-barcode-scanner';
+import { Camera, CameraView } from 'expo-camera';
 import { useEffect, useState } from 'react';
 import { Icon, Dialog } from '@rneui/themed';
 import { HostUri } from './_components/HostUri';
@@ -98,7 +99,8 @@ export default function scanMenu() {
       }
       getValueFor('secured_role');
         const getBarCodeScannerPermissions = async () => {
-          const { status } = await BarCodeScanner.requestPermissionsAsync();
+          // const { status } = await BarCodeScanner.requestPermissionsAsync();
+          const { status } = await Camera.getCameraPermissionsAsync();
           setHasPermission(status === 'granted');
         };
         getBarCodeScannerPermissions();
@@ -290,14 +292,22 @@ export default function scanMenu() {
           <CanvasSignature startSignature = {startSignature} returnSign = {returnSign}/>
         }
         
-        <View style={{flex:10 }}>
+        <View style={{ flex:1 }}>
         {
           openScanner &&
-          <BarCodeScanner
-          onBarCodeScanned={handleBarCodeScanned}
-          style={StyleSheet.absoluteFillObject}
-          >
-          <View
+          <CameraView style={StyleSheet.absoluteFillObject} facing={'back'}
+              barcodeScannerSettings={{
+                barcodeTypes: [ 
+                  //  'code39',
+                  'code128',
+                  //  'upc_a',
+                  //  'upc_e',
+                ],
+              }}
+            onBarcodeScanned = {(val)=>{handleBarCodeScanned(val)}}
+            animateShutter={false}
+        >
+         <View
               style={{
                 flex: 1,
                 backgroundColor: 'transparent',
@@ -305,9 +315,15 @@ export default function scanMenu() {
                 justifyContent: "center",
               }}
             >
-            <Icon type='material-community' name="scan-helper" color="#fff" size={250}/> 
+            {/* <Icon type='material-community' name="scan-helper" color="#fff" size={250}/>  */}
+            <View style={{borderWidth:5, borderColor:'white' ,alignItems: "center", width:'80%', height:'50%',
+                justifyContent: "center",}}>
+
+            </View>
           </View>
-          </BarCodeScanner>
+
+      </CameraView>
+
        
       }
         
