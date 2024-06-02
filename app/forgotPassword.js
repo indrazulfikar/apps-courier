@@ -1,7 +1,7 @@
 import { Dialog } from "@rneui/themed";
 import axios from "axios";
 import { useState } from "react";
-import { SafeAreaView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, SafeAreaView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { HostUri } from "./_components/HostUri";
 import { router } from "expo-router";
 
@@ -56,7 +56,7 @@ export default function forgotPassword() {
     return(
         <SafeAreaView style={styles.container}>
             <Dialog isVisible={loading} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
-                <Dialog.Loading />
+                <ActivityIndicator />
             </Dialog>
             <StatusBar style="auto" />
             <Text style={{ color:'white', fontWeight:'bold', fontSize:24, margin:15 }}>Reset Password</Text>

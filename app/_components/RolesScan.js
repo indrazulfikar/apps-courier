@@ -31,6 +31,9 @@ export const ScanMenu = (roles) =>{
         { name : 'Kurir Refund', code: '16', img : kurirrefund},
         { name : 'Refund Finish', code: '17', img : refundfinish},
         { name : 'Refund Diambil', code: '18', img : refundtake},
+        { name : 'Assign Pickup', code: 'x', img : motormini},
+        { name : 'Assign Deliv', code: 'x', img : motormini},
+        { name : 'Assign Refund', code: 'x', img : motormini},
       ];
 
     let menu = [];
@@ -46,6 +49,9 @@ export const ScanMenu = (roles) =>{
                 { name : 'Refund Diterima DC', code: '14', img : refunddc},
                 { name : 'Refund Keluar DC',code: '15', img : refunddc},
                 { name : 'Refund Diambil', code: '18', img : refundtake},
+                { name : 'Assign Pickup', code: 'x', img : motormini},
+                { name : 'Assign Deliv', code: 'x', img : motormini},
+                { name : 'Assign Refund', code: 'x', img : motormini},
             ];
         break;
         case 'staff monitoring' :
@@ -89,6 +95,20 @@ export const ScanMenu = (roles) =>{
         case 'corporate staff' :
         break;
         case 'corporate staff' :
+        break;
+        case 'merchant' :
+            menu = [
+                { name : 'Assign Pickup', code: 'x', img : motormini},
+                { name : 'Assign Deliv', code: 'x', img : motormini},
+                { name : 'Assign Refund', code: 'x', img : motormini},
+            ];
+        break;
+        case 'merchant data entry' :
+            menu = [
+                { name : 'Assign Pickup', code: 'x', img : motormini},
+                { name : 'Assign Deliv', code: 'x', img : motormini},
+                { name : 'Assign Refund', code: 'x', img : motormini},
+            ];
         break;
         default:
         break;

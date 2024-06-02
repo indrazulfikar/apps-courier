@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Dimensions, TextInput, Button } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Dimensions, TextInput, Button, ActivityIndicator } from 'react-native';
 import { useEffect, useState } from 'react';
 import { Icon, ListItem, Divider, Skeleton, Dialog } from '@rneui/themed';
 import { HostUri, HostRef } from './_components/HostUri';
@@ -131,7 +131,7 @@ export default profile = () => {
         {
             httpLoading &&
             <Dialog isVisible={httpLoading} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
-                <Dialog.Loading />
+                <ActivityIndicator />
             </Dialog>
         }
             <View style={styles.headerContainer}>

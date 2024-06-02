@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Linking, ActivityIndicator } from 'react-native';
 import { ListItem, Dialog, CheckBox } from '@rneui/themed';
 import {SelectList} from 'react-native-dropdown-select-list';
 
@@ -72,7 +72,7 @@ const AccordionPickUp = (props) => {
                  </View>
                 {( data.tracking_status_id  == '2')  && (<View><TouchableOpacity><Text onPress={toggleModal} style={{ color:'blue',  fontWeight:'bold' }}>Update</Text></TouchableOpacity></View>)}
           <Dialog isVisible={loading} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
-            <Dialog.Loading />
+            <ActivityIndicator />
           </Dialog>
            <Dialog
               isVisible={showModal}

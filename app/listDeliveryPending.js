@@ -1,4 +1,4 @@
-import { StyleSheet, Text, SafeAreaView, View, ScrollView, FlatList} from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, ScrollView, FlatList, ActivityIndicator} from 'react-native';
 import Header from './_components/Header';
 import Footer from './_components/Footer';
 import { useState, useEffect } from 'react';
@@ -216,7 +216,7 @@ export default function listDeliveryPending() {
           {
             loadingHttp && 
             <Dialog isVisible={loadingHttp} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
-              <Dialog.Loading />
+              <ActivityIndicator />
             </Dialog>
           }
           <FlatList               
