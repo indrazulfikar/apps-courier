@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, Image, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import Header from './_components/Header';
 import Footer from './_components/Footer';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+// import { BarCodeScanner } from 'expo-barcode-scanner';
+import { Camera, CameraView } from 'expo-camera';
 import { useEffect, useState } from 'react';
 import { Icon, Dialog } from '@rneui/themed';
 import { HostUri } from './_components/HostUri';
@@ -9,7 +10,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import * as ImageManipulator from 'expo-image-manipulator';
 
-import motormini from '../assets/motormini.png';
+// import motormini from '../assets/motormini.png';
 
 //images
 // import scangagalpickup from '../assets/scangagalpickup.png';
@@ -98,7 +99,8 @@ export default function scanMenu() {
       }
       getValueFor('secured_role');
         const getBarCodeScannerPermissions = async () => {
-          const { status } = await BarCodeScanner.requestPermissionsAsync();
+          // const { status } = await BarCodeScanner.requestPermissionsAsync();
+          const { status } = await Camera.getCameraPermissionsAsync();
           setHasPermission(status === 'granted');
         };
         getBarCodeScannerPermissions();
@@ -132,9 +134,21 @@ export default function scanMenu() {
     };
 
     const handlerChoice = (number, name) => {
+      if(number == 'x'){
+        if(name == 'Assign Pickup'){
+          router.replace('/assignPickupCourier')
+        }
+        if(name == 'Assign Deliv'){
+          router.replace('/assignDeliveryCourier')
+        }
+        if(name == 'Assign Refund'){
+          router.replace('/assignReturCourier')
+        }
+      }else{
         setChoice(number);
         setChoiceName(name);
         setOpenScanner(true);
+      }
     }
 
     if (hasPermission === null) {
@@ -279,7 +293,7 @@ export default function scanMenu() {
       {
         loading && 
         <Dialog isVisible={loading} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
-          <Dialog.Loading />
+          <ActivityIndicator />
         </Dialog>
       }
         <View style={styles.headerContainer}>
@@ -290,14 +304,22 @@ export default function scanMenu() {
           <CanvasSignature startSignature = {startSignature} returnSign = {returnSign}/>
         }
         
-        <View style={{flex:10 }}>
+        <View style={{ flex:1 }}>
         {
           openScanner &&
-          <BarCodeScanner
-          onBarCodeScanned={handleBarCodeScanned}
-          style={StyleSheet.absoluteFillObject}
-          >
-          <View
+          <CameraView style={StyleSheet.absoluteFillObject} facing={'back'}
+              barcodeScannerSettings={{
+                barcodeTypes: [ 
+                  //  'code39',
+                  'code128',
+                  //  'upc_a',
+                  //  'upc_e',
+                ],
+              }}
+            onBarcodeScanned = {(val)=>{handleBarCodeScanned(val)}}
+            animateShutter={false}
+        >
+         <View
               style={{
                 flex: 1,
                 backgroundColor: 'transparent',
@@ -305,9 +327,15 @@ export default function scanMenu() {
                 justifyContent: "center",
               }}
             >
-            <Icon type='material-community' name="scan-helper" color="#fff" size={250}/> 
+            {/* <Icon type='material-community' name="scan-helper" color="#fff" size={250}/>  */}
+            <View style={{borderWidth:5, borderColor:'white' ,alignItems: "center", width:'80%', height:'50%',
+                justifyContent: "center",}}>
+
+            </View>
           </View>
-          </BarCodeScanner>
+
+      </CameraView>
+
        
       }
         
@@ -325,7 +353,7 @@ export default function scanMenu() {
             </TouchableOpacity>
               ))
             }
-            <TouchableOpacity key={'x'} style={styles.contentItem} onPress={()=>{router.replace('/assignPickupCourier')}}>
+            {/* <TouchableOpacity key={'x'} style={styles.contentItem} onPress={()=>{router.replace('/assignPickupCourier')}}>
                 <Image source={motormini} style={styles.iconImage} />
                 <Text style={styles.contentText}>Assign Pickup</Text>
             </TouchableOpacity>
@@ -336,7 +364,7 @@ export default function scanMenu() {
             <TouchableOpacity key={'xxx'} style={styles.contentItem} onPress={()=>{router.replace('/assignReturCourier')}}>
               <Image source={motormini} style={styles.iconImage} /> 
                 <Text style={styles.contentText}>Assign Refund</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
         </ScrollView>
         }
         

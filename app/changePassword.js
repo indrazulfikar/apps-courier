@@ -1,4 +1,4 @@
-import { Button, KeyboardAvoidingView, SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Button, KeyboardAvoidingView, SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
 import Header from "./_components/Header";
 import { ScrollView } from "react-native-gesture-handler";
 import Footer from "./_components/Footer";
@@ -93,7 +93,7 @@ export default function changePassword()
    return(
     <SafeAreaView style={styles.container}>
         <Dialog isVisible={loading} overlayStyle={{backgroundColor:'rgba(52, 52, 52, 0.5)' }}>
-            <Dialog.Loading />
+            <ActivityIndicator />
         </Dialog>
         <View style={styles.headerContainer}>
             <Header title="Ganti Password"/>
