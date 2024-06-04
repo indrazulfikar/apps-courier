@@ -1,4 +1,4 @@
-import { ActivityIndicator, Alert, SafeAreaView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, SafeAreaView, Text, TouchableOpacity, View, StyleSheet, Modal, Pressable } from "react-native";
 import { Chip, Dialog, Divider, Header as HeaderRNE, Icon, Input, ListItem} from '@rneui/themed';
 import { router } from "expo-router";
 import { useState } from "react";
@@ -20,6 +20,7 @@ export default function assignPickupCourier(){
     const [cityList, setCityList] = useState([]);
     const [vehicleSelected, setVehicleSelected] = useState(null);
     const [vehicleList, SetVehicleList] = useState([]);
+    const [awbafterList, SetAwbAfterList] = useState({"fail":[], "success":[]});
     const [vehicleType, setVehicleType] = useState('motor');
 
     const [popLoading, setPopLoading] = useState(false);
@@ -38,7 +39,7 @@ export default function assignPickupCourier(){
     const [date, setDate] = useState('');
 
     const [loading, setLoading] = useState(false);
-
+    const [modalVisible, setModalVisible] = useState(false);
     const timeout = useRef(null);
 
     const popUpHandler = () => {
@@ -208,7 +209,6 @@ export default function assignPickupCourier(){
     }
 
     const assignHandler = async() =>{
-        
         if(shippings.length > 20){
             alert('Batas maximum 20 AWB');
             return false;
@@ -244,8 +244,10 @@ export default function assignPickupCourier(){
             }).then(function (response) {
                 // berhasil
                 // console.log(response);
-                // console.log(response.data);
-                alert(response.data.message);
+                console.log(response.data);
+                // alert(response.data.message);
+                SetAwbAfterList(response.data.data);
+                setModalVisible(true)
                 // setData(response.data.data.data);
               }).catch(function (error) {
                 // masuk ke server tapi return error (unautorized dll)
@@ -276,6 +278,52 @@ export default function assignPickupCourier(){
 
     return(
         <View style={{flex:1}}>
+            <Modal
+                style={{ margin: 0 }}
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                Alert.alert('Modal has been closed.');
+                setModalVisible(!modalVisible);
+                }}>
+                <View style={styles.centeredView}>
+                    <ScrollView style={styles.modalView}>
+                        {
+                            awbafterList.fail.map((l, i) => (
+                                <ListItem bottomDivider key={i} containerStyle={{backgroundColor: 'red'}}> 
+                                    {/* <ListItem.CheckBox
+                                        iconType="material-community"
+                                        checkedIcon="checkbox-marked"
+                                        uncheckedIcon="checkbox-blank-outline"
+                                        checked={false}
+                                        onPress={()=>{}}
+                                    /> */}
+                                    <ListItem.Content>
+                                        <ListItem.Title>{l}</ListItem.Title>
+                                    </ListItem.Content>
+                                </ListItem>
+                            ))
+                        }
+                        {
+                            awbafterList.success.map((l, i) => (
+                                <ListItem bottomDivider key={i} containerStyle={{backgroundColor: 'green'}}> 
+                                    {/* <ListItem.CheckBox
+                                        iconType="material-community"
+                                        checkedIcon="checkbox-marked"
+                                        uncheckedIcon="checkbox-blank-outline"
+                                        checked={false}
+                                        onPress={()=>{}}
+                                    /> */}
+                                    <ListItem.Content>
+                                        <ListItem.Title>{l}</ListItem.Title>
+                                    </ListItem.Content>
+                                </ListItem>
+                            ))
+                        }
+                    </ScrollView>
+                </View>
+            </Modal>
             {
                 openCamera &&
                 <CanvasBarcodeScanner openCamera = {openCamera} setOpenCamera= {setOpenCamera} returnValue = {returnValue} />
@@ -547,3 +595,46 @@ export default function assignPickupCourier(){
     )
 
 }
+const styles = StyleSheet.create({
+    centeredView: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 22,
+    },
+    modalView: {
+      width: '100%', height: '100%',
+      margin: 20,
+      backgroundColor: 'white',
+      borderRadius: 20,
+      padding: 35,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    button: {
+      borderRadius: 20,
+      padding: 10,
+      elevation: 2,
+    },
+    buttonOpen: {
+      backgroundColor: '#F194FF',
+    },
+    buttonClose: {
+      backgroundColor: '#2196F3',
+    },
+    textStyle: {
+      color: 'white',
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    modalText: {
+      marginBottom: 15,
+      textAlign: 'center',
+    },
+});
